@@ -78,6 +78,122 @@
                 padding: 1rem;
             }
         }
+        /* Decision Trace Styles */
+        .stage-card {
+            background: linear-gradient(135deg, #1F2937 0%, #111827 100%);
+            border: 1px solid #374151;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .stage-card:hover {
+            border-color: #14b8a6;
+            box-shadow: 0 0 20px rgba(20, 184, 166, 0.2);
+        }
+        .stage-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.25rem;
+            cursor: pointer;
+            user-select: none;
+            background: linear-gradient(135deg, rgba(31, 41, 55, 0.8) 0%, rgba(17, 24, 39, 0.6) 100%);
+        }
+        .stage-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .stage-card.expanded .stage-content {
+            max-height: 3000px;
+        }
+        .stage-card.expanded .expand-icon {
+            transform: rotate(180deg);
+        }
+        .expand-icon {
+            transition: transform 0.3s ease;
+        }
+        .stage-body {
+            padding: 1.25rem;
+            border-top: 1px solid rgba(55, 65, 81, 0.5);
+        }
+        .trace-connector {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #14b8a6;
+            font-size: 1.5rem;
+            height: 2rem;
+        }
+        .metric-box {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(55, 65, 81, 0.5);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+        .metric-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #9CA3AF;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        .metric-value {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #F9FAFB;
+        }
+        .info-box {
+            background: linear-gradient(135deg, rgba(20, 184, 166, 0.08) 0%, rgba(20, 184, 166, 0.03) 100%);
+            border: 1px solid rgba(20, 184, 166, 0.25);
+            border-radius: 8px;
+            padding: 1rem;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: #E5E7EB;
+        }
+        .feature-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.625rem 0.875rem;
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 6px;
+            border-left: 3px solid #14b8a6;
+            font-size: 0.85rem;
+        }
+        .feature-name {
+            color: #9CA3AF;
+            font-weight: 500;
+        }
+        .feature-value {
+            font-family: 'JetBrains Mono', monospace;
+            color: #F9FAFB;
+            font-size: 0.875rem;
+        }
+        .calculation-box {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(55, 65, 81, 0.5);
+            border-radius: 8px;
+            padding: 1.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+        }
+        .calc-line {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.625rem;
+        }
+        .calc-result {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(55, 65, 81, 0.5);
+            font-size: 1.375rem;
+            font-weight: 700;
+            color: #14b8a6;
+        }
     </style>
 </head>
 <body class="antialiased selection:bg-brand-500 selection:text-white">
@@ -378,166 +494,366 @@ I'm currently under development — please support us as we build me into a smar
 
         </div>
     </div>
-    <!-- Transparency Modal -->
+    <!-- 9-Stage Decision Trace Modal -->
     <div id="transparencyOverlay" class="fixed inset-0 bg-black/80 z-50 hidden backdrop-blur-sm transition-opacity flex items-center justify-center p-4 overflow-y-auto">
-        <div id="transparencyModal" class="bg-dark-surface border border-brand-500/30 rounded-2xl shadow-2xl w-full max-w-4xl my-auto transform transition-transform scale-95 opacity-0 overflow-hidden flex flex-col max-h-[90vh]">
+        <div id="transparencyModal" class="bg-dark-surface border border-brand-500/30 rounded-2xl shadow-2xl w-full max-w-5xl my-8 transform transition-transform scale-95 opacity-0 overflow-hidden flex flex-col max-h-[90vh]">
             <!-- Header -->
-            <div class="px-6 py-5 border-b border-white/10 bg-dark-card flex justify-between items-center sticky top-0 z-10 flex-shrink-0">
+            <div class="px-6 py-5 border-b border-white/10 bg-gradient-to-r from-dark-card to-dark-surface flex justify-between items-center sticky top-0 z-10 flex-shrink-0">
                 <div class="flex items-center space-x-3">
                     <span class="text-2xl">🧠</span>
-                    <h2 class="text-xl font-bold text-white tracking-tight">AETHER Decision Transparency</h2>
+                    <div>
+                        <h2 class="text-xl font-bold text-white tracking-tight">AETHER Decision Trace</h2>
+                        <p class="text-xs text-gray-400 mt-0.5">Observable AI decision computation pipeline</p>
+                    </div>
                 </div>
                 <button id="closeTransparencyBtn" class="text-gray-400 hover:text-white p-2 rounded-full bg-black/20 hover:bg-black/40 transition-colors focus:outline-none">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
 
-            <!-- Body -->
-            <div class="p-6 overflow-y-auto w-full space-y-8 pb-10">
+            <!-- 9-Stage Pipeline -->
+            <div class="p-6 overflow-y-auto w-full space-y-4 pb-10">
 
-                <!-- Section 1 & 2: Context and Inputs -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-dark-card border border-dark-border rounded-xl p-5">
-                        <h3 class="text-xs font-semibold text-brand-400 uppercase tracking-widest mb-4">1. Forecast Context</h3>
-                        <div class="space-y-3 text-sm text-gray-300">
-                            <div class="flex justify-between border-b border-dark-border/50 pb-2">
-                                <span class="text-gray-500">Location</span>
-                                <span id="transLocation" class="font-medium text-white text-right">--</span>
-                            </div>
-                            <div class="flex justify-between border-b border-dark-border/50 pb-2">
-                                <span class="text-gray-500">Coordinates</span>
-                                <span id="transCoords" class="code-font text-white">--</span>
-                            </div>
-                            <div class="flex justify-between border-b border-dark-border/50 pb-2">
-                                <span class="text-gray-500">Valid Time</span>
-                                <span id="transValidTime" class="font-medium text-white">--</span>
-                            </div>
-                            <div class="flex justify-between pb-1">
-                                <span class="text-gray-500">Lead Time</span>
-                                <span id="transLeadTime" class="font-medium text-white">-- hrs</span>
+                <!-- Stage 1: Forecast Context -->
+                <div class="stage-card expanded" data-stage="1">
+                    <div class="stage-header" onclick="toggleTraceStage(this)">
+                        <div class="flex items-center gap-3">
+                            <span class="text-xl">📍</span>
+                            <div>
+                                <h3 class="text-xs font-semibold text-brand-400 uppercase tracking-widest">Step 1 — Forecast Context</h3>
+                                <p class="text-xs text-gray-500 mt-0.5">Target location, time, and forecast horizon</p>
                             </div>
                         </div>
+                        <span class="expand-icon text-brand-400 text-lg">▼</span>
                     </div>
-
-                    <div class="bg-dark-card border border-dark-border rounded-xl p-5">
-                        <h3 class="text-xs font-semibold text-brand-400 uppercase tracking-widest mb-4">2. NWP Model Inputs</h3>
-                        <div class="space-y-3 text-sm text-gray-300">
-                            <div class="flex justify-between items-center border-b border-dark-border/50 pb-2">
-                                <span class="text-blue-400 font-medium">ECMWF IFS</span>
-                                <span id="transIfsVal" class="text-white code-font bg-black/30 px-2 py-0.5 rounded">-- °C</span>
-                            </div>
-                            <div class="flex justify-between items-center border-b border-dark-border/50 pb-2">
-                                <span class="text-amber-400 font-medium">NOAA GFS</span>
-                                <span id="transGfsVal" class="text-white code-font bg-black/30 px-2 py-0.5 rounded">-- °C</span>
-                            </div>
-                            <div class="flex justify-between items-center pb-1">
-                                <span class="text-emerald-400 font-medium">DWD ICON</span>
-                                <span id="transIconVal" class="text-white code-font bg-black/30 px-2 py-0.5 rounded">-- °C</span>
+                    <div class="stage-content">
+                        <div class="stage-body">
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div class="metric-box">
+                                    <div class="metric-label">Location</div>
+                                    <div class="metric-value" id="trace1-location">--</div>
+                                </div>
+                                <div class="metric-box">
+                                    <div class="metric-label">Coordinates</div>
+                                    <div class="metric-value code-font text-sm" id="trace1-coords">--</div>
+                                </div>
+                                <div class="metric-box">
+                                    <div class="metric-label">Valid Time</div>
+                                    <div class="metric-value text-sm" id="trace1-time">--</div>
+                                </div>
+                                <div class="metric-box">
+                                    <div class="metric-label">Lead Time</div>
+                                    <div class="metric-value"><span id="trace1-lead">--</span> <span class="text-xs text-gray-400">hours</span></div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Section 3 & 4: Weights & Methodology -->
-                <div class="bg-dark-card border border-dark-border rounded-xl p-5">
-                    <h3 class="text-xs font-semibold text-brand-400 uppercase tracking-widest mb-4">3. Dynamic Model Weights & Blending</h3>
-                    <p class="text-sm text-gray-300 mb-5 leading-relaxed">
-                        AETHER combines the individual NWP forecasts using dynamically learned model weights. Each model's contribution is adjusted according to the forecast context and learned model reliability.
-                    </p>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-2">
-                        <!-- Weight Bars -->
-                        <div class="space-y-2">
-                            <div class="flex justify-between text-xs font-medium">
-                                <span class="text-gray-400">IFS Weight</span>
-                                <span id="transIfsWeight" class="text-blue-400 code-font">--%</span>
-                            </div>
-                            <div class="h-2 bg-black/50 rounded-full overflow-hidden">
-                                <div id="transIfsBar" class="h-full bg-blue-500 rounded-full" style="width: 0%"></div>
+                <div class="trace-connector">↓</div>
+
+                <!-- Stage 2: NWP Inputs -->
+                <div class="stage-card" data-stage="2">
+                    <div class="stage-header" onclick="toggleTraceStage(this)">
+                        <div class="flex items-center gap-3">
+                            <span class="text-xl">🌐</span>
+                            <div>
+                                <h3 class="text-xs font-semibold text-brand-400 uppercase tracking-widest">Step 2 — NWP Model Inputs</h3>
+                                <p class="text-xs text-gray-500 mt-0.5">Live forecast retrieval from numerical weather prediction endpoints</p>
                             </div>
                         </div>
-                        <div class="space-y-2">
-                            <div class="flex justify-between text-xs font-medium">
-                                <span class="text-gray-400">GFS Weight</span>
-                                <span id="transGfsWeight" class="text-amber-400 code-font">--%</span>
+                        <span class="expand-icon text-brand-400 text-lg">▼</span>
+                    </div>
+                    <div class="stage-content">
+                        <div class="stage-body">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                <div class="metric-box">
+                                    <div class="metric-label text-blue-400">ECMWF IFS</div>
+                                    <div class="metric-value"><span id="trace2-ifs">--</span> <span class="text-xs text-gray-400">°C</span></div>
+                                </div>
+                                <div class="metric-box">
+                                    <div class="metric-label text-amber-400">NOAA GFS</div>
+                                    <div class="metric-value"><span id="trace2-gfs">--</span> <span class="text-xs text-gray-400">°C</span></div>
+                                </div>
+                                <div class="metric-box">
+                                    <div class="metric-label text-emerald-400">DWD ICON</div>
+                                    <div class="metric-value"><span id="trace2-icon">--</span> <span class="text-xs text-gray-400">°C</span></div>
+                                </div>
                             </div>
-                            <div class="h-2 bg-black/50 rounded-full overflow-hidden">
-                                <div id="transGfsBar" class="h-full bg-amber-500 rounded-full" style="width: 0%"></div>
-                            </div>
-                        </div>
-                        <div class="space-y-2">
-                            <div class="flex justify-between text-xs font-medium">
-                                <span class="text-gray-400">ICON Weight</span>
-                                <span id="transIconWeight" class="text-emerald-400 code-font">--%</span>
-                            </div>
-                            <div class="h-2 bg-black/50 rounded-full overflow-hidden">
-                                <div id="transIconBar" class="h-full bg-emerald-500 rounded-full" style="width: 0%"></div>
+                            <div class="info-box">
+                                <strong>Data Source:</strong> <span id="trace2-source">Open-Meteo API</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Section 5: Transparent Calculation -->
-                <div class="bg-black/30 border border-brand-500/20 rounded-xl p-5 relative overflow-hidden">
-                    <div class="absolute inset-0 bg-gradient-to-r from-brand-900/10 to-transparent pointer-events-none"></div>
-                    <h3 class="text-xs font-semibold text-brand-400 uppercase tracking-widest mb-4">4. Transparent Blend Calculation</h3>
+                <div class="trace-connector">↓</div>
 
-                    <div class="font-mono text-sm md:text-base text-gray-300 space-y-3 bg-black/40 p-5 rounded-lg border border-dark-border/50">
-                        <div class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 items-center">
-                             <div class="text-right text-gray-400"></div>
-                             <div id="calcIfs" class="text-blue-300">(-- °C × --)</div>
-
-                             <div class="text-right text-gray-400 font-bold">+</div>
-                             <div id="calcGfs" class="text-amber-300">(-- °C × --)</div>
-
-                             <div class="text-right text-gray-400 font-bold">+</div>
-                             <div id="calcIcon" class="text-emerald-300">(-- °C × --)</div>
-
-                             <div class="text-right text-gray-400 font-bold mt-2 pt-2 border-t border-dark-border/50">=</div>
-                             <div id="calcResult" class="text-white font-bold text-lg md:text-xl mt-2 pt-2 border-t border-dark-border/50">-- °C</div>
+                <!-- Stage 3: Feature Vector -->
+                <div class="stage-card" data-stage="3">
+                    <div class="stage-header" onclick="toggleTraceStage(this)">
+                        <div class="flex items-center gap-3">
+                            <span class="text-xl">🧩</span>
+                            <div>
+                                <h3 class="text-xs font-semibold text-brand-400 uppercase tracking-widest">Step 3 — Model Input Features</h3>
+                                <p class="text-xs text-gray-500 mt-0.5">Structured 11-dimensional feature vector fed into MLPGatingNet</p>
+                            </div>
+                        </div>
+                        <span class="expand-icon text-brand-400 text-lg">▼</span>
+                    </div>
+                    <div class="stage-content">
+                        <div class="stage-body">
+                            <div id="trace3-features" class="space-y-2">
+                                <!-- Dynamic features populated by JS -->
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Section 6 & 7: Uncertainty & Provenance -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-dark-card border border-dark-border rounded-xl p-5">
-                        <h3 class="text-xs font-semibold text-brand-400 uppercase tracking-widest mb-3">5. Uncertainty & Agreement</h3>
-                        <p class="text-xs text-gray-400 mb-4 leading-relaxed">
-                            Uncertainty reflects the expected forecast error envelope, while model disagreement indicates how closely the individual NWP models agree.
-                        </p>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="bg-black/30 p-3 rounded-lg border border-white/5">
-                                <div class="text-[10px] text-gray-500 uppercase font-semibold mb-1">Uncertainty</div>
-                                <div id="transUncertainty" class="text-white font-semibold flex items-baseline">-- <span class="text-xs ml-1 text-gray-400">°C</span></div>
+                <div class="trace-connector">↓</div>
+
+                <!-- Stage 4: Neural Network -->
+                <div class="stage-card" data-stage="4">
+                    <div class="stage-header" onclick="toggleTraceStage(this)">
+                        <div class="flex items-center gap-3">
+                            <span class="text-xl">🧠</span>
+                            <div>
+                                <h3 class="text-xs font-semibold text-brand-400 uppercase tracking-widest">Step 4 — MLPGatingNet Forward Pass</h3>
+                                <p class="text-xs text-gray-500 mt-0.5">PyTorch neural network inference producing model reliability scores</p>
                             </div>
-                            <div class="bg-black/30 p-3 rounded-lg border border-white/5">
-                                <div class="text-[10px] text-gray-500 uppercase font-semibold mb-1">Disagreement</div>
-                                <div id="transDisagreement" class="text-white font-semibold flex items-baseline">-- <span class="text-xs ml-1 text-gray-400">std</span></div>
+                        </div>
+                        <span class="expand-icon text-brand-400 text-lg">▼</span>
+                    </div>
+                    <div class="stage-content">
+                        <div class="stage-body">
+                            <div class="info-box">
+                                <strong>Architecture:</strong> Multi-Layer Perceptron with ReLU activation<br>
+                                <strong>Input Layer:</strong> 11 features<br>
+                                <strong>Hidden Layer:</strong> 16 neurons + ReLU + Dropout(0.2)<br>
+                                <strong>Output Layer:</strong> 3 logits (pre-softmax scores)
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <div class="bg-dark-card border border-dark-border rounded-xl p-5 flex flex-col justify-between">
-                        <div>
-                            <h3 class="text-xs font-semibold text-brand-400 uppercase tracking-widest mb-3">6. Provenance & Confidence</h3>
-                            <div class="flex justify-between items-center mb-3">
-                                <span class="text-sm text-gray-400">Neural Confidence</span>
-                                <span id="transConfidence" class="text-sm font-semibold text-white bg-brand-500/20 text-brand-400 px-2 py-1 rounded">--</span>
+                <div class="trace-connector">↓</div>
+
+                <!-- Stage 5: Pre-Softmax Scores -->
+                <div class="stage-card" data-stage="5">
+                    <div class="stage-header" onclick="toggleTraceStage(this)">
+                        <div class="flex items-center gap-3">
+                            <span class="text-xl">📈</span>
+                            <div>
+                                <h3 class="text-xs font-semibold text-brand-400 uppercase tracking-widest">Step 5 — Pre-Softmax Gating Scores</h3>
+                                <p class="text-xs text-gray-500 mt-0.5">Learned model reliability scores before normalization</p>
                             </div>
                         </div>
-                        <div id="refContainer" class="hidden border-t border-dark-border/50 pt-3 mt-3">
-                            <div class="flex justify-between items-center">
-                                <span class="text-xs text-gray-500 font-medium">Reference / Verification Value</span>
-                                <span id="transRefValue" class="text-sm font-semibold text-white code-font bg-black/40 px-2 py-1 rounded">-- °C</span>
+                        <span class="expand-icon text-brand-400 text-lg">▼</span>
+                    </div>
+                    <div class="stage-content">
+                        <div class="stage-body">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="metric-box border-l-2 border-blue-500">
+                                    <div class="metric-label text-blue-400">IFS Score</div>
+                                    <div class="metric-value code-font" id="trace5-ifs">--</div>
+                                </div>
+                                <div class="metric-box border-l-2 border-amber-500">
+                                    <div class="metric-label text-amber-400">GFS Score</div>
+                                    <div class="metric-value code-font" id="trace5-gfs">--</div>
+                                </div>
+                                <div class="metric-box border-l-2 border-emerald-500">
+                                    <div class="metric-label text-emerald-400">ICON Score</div>
+                                    <div class="metric-value code-font" id="trace5-icon">--</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="trace-connector">↓</div>
+
+                <!-- Stage 6: Softmax Weights -->
+                <div class="stage-card" data-stage="6">
+                    <div class="stage-header" onclick="toggleTraceStage(this)">
+                        <div class="flex items-center gap-3">
+                            <span class="text-xl">⚖️</span>
+                            <div>
+                                <h3 class="text-xs font-semibold text-brand-400 uppercase tracking-widest">Step 6 — Softmax Dynamic Weights</h3>
+                                <p class="text-xs text-gray-500 mt-0.5">Normalized model contributions (sum = 100%)</p>
+                            </div>
+                        </div>
+                        <span class="expand-icon text-brand-400 text-lg">▼</span>
+                    </div>
+                    <div class="stage-content">
+                        <div class="stage-body">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                <div class="metric-box">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <span class="metric-label text-blue-400">ECMWF IFS</span>
+                                        <span class="metric-value code-font text-sm" id="trace6-ifs-pct">--%</span>
+                                    </div>
+                                    <div class="h-2 bg-black/50 rounded-full overflow-hidden">
+                                        <div class="h-full bg-blue-500 rounded-full transition-all duration-700" id="trace6-ifs-bar" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                <div class="metric-box">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <span class="metric-label text-amber-400">NOAA GFS</span>
+                                        <span class="metric-value code-font text-sm" id="trace6-gfs-pct">--%</span>
+                                    </div>
+                                    <div class="h-2 bg-black/50 rounded-full overflow-hidden">
+                                        <div class="h-full bg-amber-500 rounded-full transition-all duration-700" id="trace6-gfs-bar" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                <div class="metric-box">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <span class="metric-label text-emerald-400">DWD ICON</span>
+                                        <span class="metric-value code-font text-sm" id="trace6-icon-pct">--%</span>
+                                    </div>
+                                    <div class="h-2 bg-black/50 rounded-full overflow-hidden">
+                                        <div class="h-full bg-emerald-500 rounded-full transition-all duration-700" id="trace6-icon-bar" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="info-box">
+                                <strong>Softmax Normalization:</strong> Raw gating scores are transformed into a valid probability distribution where weights sum to 1.0, ensuring each model's contribution is proportional to its learned reliability for this forecast context.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="trace-connector">↓</div>
+
+                <!-- Stage 7: Ensemble Calculation -->
+                <div class="stage-card" data-stage="7">
+                    <div class="stage-header" onclick="toggleTraceStage(this)">
+                        <div class="flex items-center gap-3">
+                            <span class="text-xl">🧮</span>
+                            <div>
+                                <h3 class="text-xs font-semibold text-brand-400 uppercase tracking-widest">Step 7 — Weighted Ensemble Calculation</h3>
+                                <p class="text-xs text-gray-500 mt-0.5">Final temperature computed as linear combination of model forecasts</p>
+                            </div>
+                        </div>
+                        <span class="expand-icon text-brand-400 text-lg">▼</span>
+                    </div>
+                    <div class="stage-content">
+                        <div class="stage-body">
+                            <div class="calculation-box" id="trace7-calc">
+                                <!-- Dynamic calculation formula -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="trace-connector">↓</div>
+
+                <!-- Stage 8: Uncertainty -->
+                <div class="stage-card" data-stage="8">
+                    <div class="stage-header" onclick="toggleTraceStage(this)">
+                        <div class="flex items-center gap-3">
+                            <span class="text-xl">📊</span>
+                            <div>
+                                <h3 class="text-xs font-semibold text-brand-400 uppercase tracking-widest">Step 8 — Uncertainty Quantification</h3>
+                                <p class="text-xs text-gray-500 mt-0.5">Model agreement and forecast confidence assessment</p>
+                            </div>
+                        </div>
+                        <span class="expand-icon text-brand-400 text-lg">▼</span>
+                    </div>
+                    <div class="stage-content">
+                        <div class="stage-body">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                <div class="metric-box">
+                                    <div class="metric-label">Uncertainty</div>
+                                    <div class="metric-value"><span id="trace8-unc">--</span> <span class="text-xs text-gray-400">°C</span></div>
+                                </div>
+                                <div class="metric-box">
+                                    <div class="metric-label">Disagreement</div>
+                                    <div class="metric-value"><span id="trace8-disagreement">--</span> <span class="text-xs text-gray-400">std</span></div>
+                                </div>
+                                <div class="metric-box">
+                                    <div class="metric-label">Confidence</div>
+                                    <div class="metric-value text-brand-400" id="trace8-confidence">--</div>
+                                </div>
+                            </div>
+                            <div class="info-box">
+                                <strong>Uncertainty:</strong> Expected forecast error envelope (1-sigma)<br>
+                                <strong>Disagreement:</strong> Inter-model standard deviation indicating NWP spread<br>
+                                <strong>Confidence:</strong> Evaluated via model spread versus historical error patterns
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="trace-connector">↓</div>
+
+                <!-- Stage 9: Final Forecast -->
+                <div class="stage-card expanded" data-stage="9">
+                    <div class="stage-header" onclick="toggleTraceStage(this)">
+                        <div class="flex items-center gap-3">
+                            <span class="text-xl">🌡️</span>
+                            <div>
+                                <h3 class="text-xs font-semibold text-brand-400 uppercase tracking-widest">Step 9 — Final Blended Forecast</h3>
+                                <p class="text-xs text-gray-500 mt-0.5">AETHER ensemble prediction with provenance metadata</p>
+                            </div>
+                        </div>
+                        <span class="expand-icon text-brand-400 text-lg">▼</span>
+                    </div>
+                    <div class="stage-content">
+                        <div class="stage-body">
+                            <div class="text-center py-6">
+                                <div class="text-xs uppercase tracking-widest text-gray-400 mb-2">AETHER Dynamic Ensemble Forecast</div>
+                                <div class="text-6xl font-bold text-brand-400 code-font">
+                                    <span id="trace9-final">--</span><span class="text-3xl text-gray-500">°C</span>
+                                </div>
+                            </div>
+                            <div class="info-box mt-4">
+                                <strong>Decision Rationale:</strong> <span id="trace9-explanation">Under this forecast context, the gating network allocated weights based on learned model reliability patterns from historical error minimization.</span>
+                            </div>
+                            <div id="trace9-ref-container" class="hidden mt-4">
+                                <div class="metric-box text-center">
+                                    <div class="metric-label">Reference / Verification Value</div>
+                                    <div class="metric-value"><span id="trace9-ref">--</span> <span class="text-xs text-gray-400">°C</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Metadata -->
+                <div class="stage-card" data-stage="meta">
+                    <div class="stage-header" onclick="toggleTraceStage(this)">
+                        <div class="flex items-center gap-3">
+                            <span class="text-xl">⚙️</span>
+                            <div>
+                                <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-widest">Advanced — Model Metadata</h3>
+                                <p class="text-xs text-gray-600 mt-0.5">Technical provenance and model identification</p>
+                            </div>
+                        </div>
+                        <span class="expand-icon text-gray-500 text-lg">▼</span>
+                    </div>
+                    <div class="stage-content">
+                        <div class="stage-body">
+                            <div class="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-sm">
+                                <span class="text-gray-400 font-medium">Model Type:</span>
+                                <span class="text-white code-font text-xs">PyTorch MLP Gating Network</span>
+
+                                <span class="text-gray-400 font-medium">Training Objective:</span>
+                                <span class="text-white text-xs">Minimize ensemble RMSE via learned soft weights</span>
+
+                                <span class="text-gray-400 font-medium">Candidates:</span>
+                                <span class="text-white text-xs">ECMWF IFS, NOAA GFS, DWD ICON</span>
+
+                                <span class="text-gray-400 font-medium">Model SHA256:</span>
+                                <span class="text-white code-font text-xs break-all" id="trace-meta-sha">--</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Disclaimer -->
-                <div class="text-center mt-6">
-                    <p class="text-[10px] text-gray-500 leading-relaxed max-w-2xl mx-auto italic">
-                        Decision transparency shows the observable forecast inputs, model contributions, ensemble calculation and uncertainty. It does not expose private model chain-of-thought.
+                <div class="text-center mt-4 pt-4 border-t border-white/10">
+                    <p class="text-[10px] text-gray-500 leading-relaxed max-w-3xl mx-auto">
+                        This Decision Trace exposes the observable computational pipeline of AETHER's MLPGatingNet. All values are derived from real feature vectors, pre-softmax logits, and mathematical ensemble operations. No private neural network chain-of-thought or fabricated reasoning is shown.
                     </p>
                 </div>
             </div>
@@ -829,63 +1145,139 @@ I'm currently under development — please support us as we build me into a smar
             });
         }
 
+        function toggleTraceStage(header) {
+            const stage = header.closest('.stage-card');
+            if (stage) {
+                stage.classList.toggle('expanded');
+            }
+        }
+
         function populateTransparency(data) {
             const locName = document.getElementById('locationSelect').selectedOptions[0].text.split('(')[0].trim();
             const lat = data.location.latitude;
             const lon = data.location.longitude;
 
-            document.getElementById('transLocation').innerText = locName;
-            document.getElementById('transCoords').innerText = `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+            const exp = data.explainability || {};
+            const trace = exp.computation_trace || {};
 
-            // Format time nicely
+            // Stage 1: Context
+            document.getElementById('trace1-location').textContent = locName;
+            document.getElementById('trace1-coords').textContent = `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+
             const d = new Date(data.valid_time);
-            document.getElementById('transValidTime').innerText = d.toLocaleString(undefined, {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'});
-            document.getElementById('transLeadTime').innerText = data.lead_time_hours;
+            document.getElementById('trace1-time').textContent = d.toLocaleString(undefined, {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'});
+            document.getElementById('trace1-lead').textContent = data.lead_time_hours;
 
+            // Stage 2: NWP Inputs
             const f = data.model_forecasts || {};
+            document.getElementById('trace2-ifs').textContent = f.IFS !== undefined ? f.IFS.toFixed(2) : '--';
+            document.getElementById('trace2-gfs').textContent = f.GFS !== undefined ? f.GFS.toFixed(2) : '--';
+            document.getElementById('trace2-icon').textContent = f.ICON !== undefined ? f.ICON.toFixed(2) : '--';
+
+            const provIFS = data.provenance?.IFS;
+            if (provIFS) {
+                document.getElementById('trace2-source').textContent = provIFS.data_source || 'Open-Meteo API';
+            }
+
+            // Stage 3: Features
+            const features = trace.step_3_features;
+            if (features) {
+                const featureList = document.getElementById('trace3-features');
+                featureList.innerHTML = '';
+
+                if (features.temporal) {
+                    Object.entries(features.temporal).forEach(([key, value]) => {
+                        const displayValue = key.includes('sqrt') ? value.toFixed(4) :
+                                           key.includes('sin') || key.includes('cos') ? value.toFixed(4) :
+                                           value;
+                        featureList.innerHTML += `
+                            <div class="feature-row">
+                                <span class="feature-name">${key}</span>
+                                <span class="feature-value">${displayValue}</span>
+                            </div>
+                        `;
+                    });
+                }
+                if (features.spatial) {
+                    Object.entries(features.spatial).forEach(([key, value]) => {
+                        featureList.innerHTML += `
+                            <div class="feature-row">
+                                <span class="feature-name">${key}</span>
+                                <span class="feature-value">${value.toFixed(4)}</span>
+                            </div>
+                        `;
+                    });
+                }
+            }
+
+            // Stage 5: Gating Scores
+            const scores = trace.step_4_gating_scores;
+            if (scores) {
+                document.getElementById('trace5-ifs').textContent = scores.IFS.toFixed(4);
+                document.getElementById('trace5-gfs').textContent = scores.GFS.toFixed(4);
+                document.getElementById('trace5-icon').textContent = scores.ICON.toFixed(4);
+            }
+
+            // Stage 6: Weights
             const w = data.model_weights || {};
+            const wIFS = (w.IFS || 0) * 100;
+            const wGFS = (w.GFS || 0) * 100;
+            const wICON = (w.ICON || 0) * 100;
 
-            document.getElementById('transIfsVal').innerText = (f.IFS !== undefined ? f.IFS.toFixed(2) : '--') + " °C";
-            document.getElementById('transGfsVal').innerText = (f.GFS !== undefined ? f.GFS.toFixed(2) : '--') + " °C";
-            document.getElementById('transIconVal').innerText = (f.ICON !== undefined ? f.ICON.toFixed(2) : '--') + " °C";
+            document.getElementById('trace6-ifs-pct').textContent = `${wIFS.toFixed(0)}%`;
+            document.getElementById('trace6-gfs-pct').textContent = `${wGFS.toFixed(0)}%`;
+            document.getElementById('trace6-icon-pct').textContent = `${wICON.toFixed(0)}%`;
 
-            const wIfs = (w.IFS || 0);
-            const wGfs = (w.GFS || 0);
-            const wIcon = (w.ICON || 0);
+            setTimeout(() => {
+                document.getElementById('trace6-ifs-bar').style.width = `${wIFS}%`;
+                document.getElementById('trace6-gfs-bar').style.width = `${wGFS}%`;
+                document.getElementById('trace6-icon-bar').style.width = `${wICON}%`;
+            }, 50);
 
-            // Weights Bars
-            document.getElementById('transIfsWeight').innerText = (wIfs * 100).toFixed(1) + "%";
-            document.getElementById('transIfsBar').style.width = (wIfs * 100) + "%";
+            // Stage 7: Ensemble Calc
+            const contrib = trace.step_6_weighted_contributions;
+            if (contrib) {
+                const calcBox = document.getElementById('trace7-calc');
+                calcBox.innerHTML = `
+                    <div class="calc-line text-sm md:text-base">
+                        <span class="text-blue-400 w-[180px]">(${f.IFS.toFixed(2)} × ${w.IFS.toFixed(3)})</span>
+                        <span class="text-gray-500">=</span>
+                        <span class="text-blue-400 font-bold ml-2">${contrib.IFS.toFixed(3)}</span>
+                    </div>
+                    <div class="calc-line text-sm md:text-base border-t border-white/5 pt-2 mt-2">
+                        <span class="text-amber-400 w-[180px]">(${f.GFS.toFixed(2)} × ${w.GFS.toFixed(3)})</span>
+                        <span class="text-gray-500">+</span>
+                        <span class="text-amber-400 font-bold ml-2">${contrib.GFS.toFixed(3)}</span>
+                    </div>
+                    <div class="calc-line text-sm md:text-base border-t border-white/5 pt-2 mt-2">
+                        <span class="text-emerald-400 w-[180px]">(${f.ICON.toFixed(2)} × ${w.ICON.toFixed(3)})</span>
+                        <span class="text-gray-500">+</span>
+                        <span class="text-emerald-400 font-bold ml-2">${contrib.ICON.toFixed(3)}</span>
+                    </div>
+                `;
+            }
 
-            document.getElementById('transGfsWeight').innerText = (wGfs * 100).toFixed(1) + "%";
-            document.getElementById('transGfsBar').style.width = (wGfs * 100) + "%";
+            // Stage 8: Uncertainty
+            document.getElementById('trace8-unc').textContent = data.uncertainty?.toFixed(2) || '--';
+            document.getElementById('trace8-disagreement').textContent = data.disagreement?.toFixed(2) || '--';
+            document.getElementById('trace8-confidence').textContent = data.confidence || '--';
 
-            document.getElementById('transIconWeight').innerText = (wIcon * 100).toFixed(1) + "%";
-            document.getElementById('transIconBar').style.width = (wIcon * 100) + "%";
+            // Stage 9: Final & Meta
+            document.getElementById('trace9-final').textContent = data.forecast?.toFixed(2) || '--';
 
-            // Equation
-            const ifsVal = f.IFS || 0;
-            const gfsVal = f.GFS || 0;
-            const iconVal = f.ICON || 0;
+            const explanation = `Under this forecast context, the PyTorch gating network computed explicit raw reliability scores, which normalized via Softmax to weights: ${(w.IFS*100).toFixed(1)}% IFS, ${(w.GFS*100).toFixed(1)}% GFS, and ${(w.ICON*100).toFixed(1)}% ICON based on mathematical historical real data optimization.`;
+            document.getElementById('trace9-explanation').textContent = explanation;
 
-            document.getElementById('calcIfs').innerText = `(${ifsVal.toFixed(2)} °C × ${wIfs.toFixed(3)})`;
-            document.getElementById('calcGfs').innerText = `(${gfsVal.toFixed(2)} °C × ${wGfs.toFixed(3)})`;
-            document.getElementById('calcIcon').innerText = `(${iconVal.toFixed(2)} °C × ${wIcon.toFixed(3)})`;
-
-            document.getElementById('calcResult').innerText = data.forecast.toFixed(2) + " °C";
-
-            // Uncertainty
-            document.getElementById('transUncertainty').innerHTML = `±${data.uncertainty.toFixed(2)} <span class="text-xs ml-1 text-gray-400">°C</span>`;
-            document.getElementById('transDisagreement').innerHTML = `${data.disagreement.toFixed(2)} <span class="text-xs ml-1 text-gray-400">std</span>`;
-            document.getElementById('transConfidence').innerText = data.confidence || "Unknown";
-
-            // Provenance
-            const refContainer = document.getElementById('refContainer');
-            if(data.reference_value !== null && data.reference_value !== undefined) {
-                refContainer.classList.remove('hidden');
-                document.getElementById('transRefValue').innerText = data.reference_value.toFixed(2) + " °C";
+            if (data.reference_value !== null && data.reference_value !== undefined) {
+                document.getElementById('trace9-ref-container').classList.remove('hidden');
+                document.getElementById('trace9-ref').textContent = data.reference_value.toFixed(2);
             } else {
-                refContainer.classList.add('hidden');
+                document.getElementById('trace9-ref-container').classList.add('hidden');
+            }
+
+            const modelMeta = exp.model_metadata;
+            if(modelMeta && modelMeta.model_sha256) {
+                document.getElementById('trace-meta-sha').textContent = modelMeta.model_sha256;
             }
         }
 
