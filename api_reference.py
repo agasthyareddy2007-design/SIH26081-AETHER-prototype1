@@ -63,6 +63,9 @@ class ForecastResponse(BaseModel):
     uncertainty: float
     confidence: str
     reference_value: float | None
+    explainability: Dict[str, Any] | None = None
+    provenance: Dict[str, Any] | None = None
+    persistence_status: str | None = None
 
 class ChatResponse(BaseModel):
     reply: str
