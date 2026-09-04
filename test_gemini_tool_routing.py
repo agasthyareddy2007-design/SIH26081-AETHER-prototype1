@@ -59,13 +59,9 @@ def test_external_provider_tool_routing():
             print("FATAL: Gemini API was not called.")
             sys.exit(1)
 
-        # 1. Verify exact request payload contains `tools`
-        if "tools" not in intercepted_payload:
-            print("FATAL: Request payload is missing native 'tools' definition!")
-            sys.exit(1)
-
-        if len(intercepted_payload["tools"]) != 5:
-            print(f"FATAL: Expected 5 tools, got {len(intercepted_payload['tools'])}")
+        # 1. Verify exact request payload DOES NOT contain `tools`
+        if "tools" in intercepted_payload:
+            print("FATAL: Request payload contains 'tools' array which causes Cloud Run timeouts!")
             sys.exit(1)
 
         # 2. Verify strict JSON text rules are removed from the system prompt
@@ -74,7 +70,7 @@ def test_external_provider_tool_routing():
             print("FATAL: Strict JSON prompt was not removed for external LLM provider.")
             sys.exit(1)
 
-        print("✓ Gemini OpenAI-compatible native tool schema successfully replaces strict JSON prompting.")
+        print("✓ Gemini API payload correctly omits 'tools' to prevent Google AI Studio Proxy timeouts.")
         print("✓ System prompt correctly truncated to prevent text-based JSON generation stalls.")
     finally:
         requests.post = original_post

@@ -119,99 +119,12 @@ To provide an answer to the user or to REFUSE an illegal request, return ONLY JS
             "Content-Type": "application/json"
         }
 
-        # Native OpenAI tool definitions for accurate external routing without strict JSON parsing hangs
-        tools = [
-            {
-                "type": "function",
-                "function": {
-                    "name": "predict_forecast",
-                    "description": "Predict multi-model numerical weather forecast",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "lat": {"type": "number"},
-                            "lon": {"type": "number"},
-                            "valid_time": {"type": "string", "description": "YYYY-MM-DD HH:MM:SS format"},
-                            "lead_time_hours": {"type": "integer"}
-                        },
-                        "required": ["lat", "lon", "valid_time", "lead_time_hours"]
-                    }
-                }
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "get_model_weights",
-                    "description": "Get individual model blending weights",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "lat": {"type": "number"},
-                            "lon": {"type": "number"},
-                            "valid_time": {"type": "string"},
-                            "lead_time_hours": {"type": "integer"}
-                        },
-                        "required": ["lat", "lon", "valid_time", "lead_time_hours"]
-                    }
-                }
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "get_model_comparison",
-                    "description": "Compare candidate models",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "lat": {"type": "number"},
-                            "lon": {"type": "number"},
-                            "valid_time": {"type": "string"},
-                            "lead_time_hours": {"type": "integer"}
-                        },
-                        "required": ["lat", "lon", "valid_time", "lead_time_hours"]
-                    }
-                }
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "get_forecast_explanation",
-                    "description": "Explain the forecast and model weights",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "lat": {"type": "number"},
-                            "lon": {"type": "number"},
-                            "valid_time": {"type": "string"},
-                            "lead_time_hours": {"type": "integer"}
-                        },
-                        "required": ["lat", "lon", "valid_time", "lead_time_hours"]
-                    }
-                }
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "get_uncertainty",
-                    "description": "Get uncertainty and disagreement values",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "lat": {"type": "number"},
-                            "lon": {"type": "number"},
-                            "valid_time": {"type": "string"},
-                            "lead_time_hours": {"type": "integer"}
-                        },
-                        "required": ["lat", "lon", "valid_time", "lead_time_hours"]
-                    }
-                }
-            }
-        ]
-
+        # Removed native tools array completely to prevent OpenAI proxy timeouts.
+        # Gemini will now act purely as the natural language generation layer
+        # over the structurally provided local tool results.
         payload = {
             "model": self.model_name,
             "messages": messages,
-            "tools": tools,
             "temperature": 0.01,
             "max_tokens": 400
         }
@@ -222,24 +135,11 @@ To provide an answer to the user or to REFUSE an illegal request, return ONLY JS
             data = resp.json()
             message = data["choices"][0]["message"]
 
-            # If the model natively called a tool, translate it to the fallback JSON schema text
-            # so the run_interaction loop continues normally
-            if message.get("tool_calls"):
-                tc = message["tool_calls"][0]
-                action = tc["function"].get("name")
-                args_str = tc["function"].get("arguments", "{}")
-                try:
-                    args = json.loads(args_str)
-                except json.JSONDecodeError:
-                    args = {}
-                return json.dumps({"action": action, "args": args})
-
-            # If the model returned text (e.g. asking for location or answering natively)
             content = message.get("content") or ""
-            return json.dumps({"action": "answer", "text": content.strip()})
+            return content.strip()
         except Exception as e:
             self.logger.error(f"External API call failed: {e}")
-            return f'{{"action": "answer", "text": "AETHER encountered an API error: {str(e)}"}}'
+            return f"AETHER encountered an API error: {str(e)}"
 
     def _generate_local(self, messages):
         prompt = self.tokenizer.apply_chat_template(
@@ -289,28 +189,37 @@ To provide an answer to the user or to REFUSE an illegal request, return ONLY JS
 
             tool_result = self.execute_tool(action, args)
             messages.append({"role": "user", "content": user_msg})
-            messages.append({"role": "assistant", "content": f'{{"action": "{action}", "args": {json.dumps(args)}}}'})
-            messages.append({"role": "user", "content": f"Tool Result:\n{tool_result}\nNow formulate the final answer. If the request was illegal, output an answer action refusing."})
+
+            if self.provider_type == "local":
+                messages.append({"role": "assistant", "content": f'{{"action": "{action}", "args": {json.dumps(args)}}}'})
+                messages.append({"role": "user", "content": f"Tool Result:\n{tool_result}\nNow formulate the final answer. If the request was illegal, output an answer action refusing."})
+            else:
+                # External mode avoids custom JSON actions completely
+                messages.append({"role": "user", "content": f"Numerical Forecast Engine Result:\n{tool_result}\nFormulate the final natural language answer to the user based on these results. Do NOT fabricate any numbers. Do NOT output JSON."})
         else:
             messages.append({"role": "user", "content": user_msg})
 
         for _ in range(max_turns):
             if self.provider_type == "local":
                 response_text = self._generate_local(messages)
+                if response_text.startswith("```json"):
+                    response_text = response_text[7:]
+                if response_text.endswith("```"):
+                    response_text = response_text[:-3]
+                response_text = response_text.strip()
+
+                try:
+                    action_data = json.loads(response_text)
+                except json.JSONDecodeError:
+                    action_data = {"action": "answer", "text": response_text}
             else:
+                # In external mode, Gemini receives the pre-executed tool result naturally
+                # from the prompt enrichment in api_reference + local fast-path.
+                # Do NOT force it into an artificial JSON loop.
+                # If geocoding failed and this is a cold prompt, Gemini will still answer natively requiring clarification.
                 response_text = self._generate_external(messages)
-                
-            if response_text.startswith("```json"):
-                response_text = response_text[7:]
-            if response_text.endswith("```"):
-                response_text = response_text[:-3]
-            response_text = response_text.strip()
-            
-            try:
-                action_data = json.loads(response_text)
-            except json.JSONDecodeError:
-                action_data = {"action": "answer", "text": response_text}
-                
+                return response_text # Exit immediately without recursive multi-turn logic
+
             action = action_data.get("action")
             
             if action == "answer":
