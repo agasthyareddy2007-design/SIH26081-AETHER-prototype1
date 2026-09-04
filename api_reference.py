@@ -170,7 +170,10 @@ async def startup_event():
 
 @app.get("/")
 async def root():
-    return {"message": "API is operational. Frontend has been removed."}
+    index_path = PROJECT_ROOT / "frontend" / "index.html"
+    if index_path.exists():
+        return FileResponse(index_path)
+    return {"message": "API is operational. Frontend not found."}
 
 @app.get("/health")
 async def health_check():
