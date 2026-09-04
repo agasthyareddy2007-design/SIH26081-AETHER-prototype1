@@ -111,11 +111,11 @@ print("✓ Open-Meteo API key never appears in engine logs/errors.")
 
 print("--- ALL REGRESSION TESTS PASS ---")
 
-# Test 4: Gemini model resolves to gemini-2.5-flash
+# Test 4: Gemini model resolves to gemini-3.6-flash
 assistant = AETHERAssistant(engine=engine)
-if assistant.model_name != "gemini-2.5-flash":
-    print(f"FATAL: Expected model 'gemini-2.5-flash', got '{assistant.model_name}'")
+if assistant.model_name != "gemini-3.6-flash":
+    print(f"FATAL: Expected model 'gemini-3.6-flash', got '{assistant.model_name}'")
     sys.exit(1)
-print("✓ Gemini model resolves to gemini-2.5-flash.")
+print("✓ Gemini model resolves to gemini-3.6-flash.")
 
 print("--- ALL UPDATED REGRESSION TESTS PASS ---")

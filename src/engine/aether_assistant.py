@@ -67,7 +67,7 @@ To provide an answer to the user or to REFUSE an illegal request, return ONLY JS
             self.logger.warning("EXTERNAL_LLM_API_KEY environment variable is missing but required for cloud mode.")
 
         self.api_base = os.environ.get("EXTERNAL_LLM_API_BASE", "https://api.openai.com/v1").rstrip('/')
-        self.model_name = os.environ.get("EXTERNAL_LLM_MODEL", "gemini-2.5-flash")
+        self.model_name = os.environ.get("EXTERNAL_LLM_MODEL", "gemini-3.6-flash")
         self.logger.info(f"External AETHER Assistant initialized with endpoint: {self.api_base} (Model: {self.model_name})")
 
     def parse_time(self, t_str):
