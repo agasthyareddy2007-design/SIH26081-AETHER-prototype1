@@ -31,7 +31,7 @@ CRITICAL RULES YOU MUST OBEY:
 9. Explain uncertainty without inventing confidence percentages.
 10. If asked why a model received a higher weight, DO NOT guess physics reasons. State that the neural network assigned it based on historical optimization for the given context.
 
-You must interact with the environment via strict JSON action outputs. 
+You must interact with the environment via strict JSON action outputs.
 To use a tool, return ONLY JSON in this format:
 {"action": "<tool_name>", "args": {"lat": 17.3, "lon": 78.5, "valid_time": "YYYY-MM-DD HH:MM:SS", "lead_time_hours": 12}}
 
@@ -45,6 +45,10 @@ Available tools:
 To provide an answer to the user or to REFUSE an illegal request, return ONLY JSON in this format:
 {"action": "answer", "text": "Your natural language response here."}
 """
+
+        # For external models using native tool calling, remove the strict text-based JSON formatting rules
+        if self.provider_type == "external":
+            self.system_prompt = self.system_prompt.split("You must interact with the environment via strict JSON action outputs.")[0].strip()
 
     def _init_local_llm(self, model_id: str):
         import torch
@@ -109,23 +113,130 @@ To provide an answer to the user or to REFUSE an illegal request, return ONLY JS
     def _generate_external(self, messages):
         if not getattr(self, 'api_key', None):
             return '{"action": "answer", "text": "AETHER configuration error: EXTERNAL_LLM_API_KEY is missing."}'
-            
+
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json"
         }
+
+        # Native OpenAI tool definitions for accurate external routing without strict JSON parsing hangs
+        tools = [
+            {
+                "type": "function",
+                "function": {
+                    "name": "predict_forecast",
+                    "description": "Predict multi-model numerical weather forecast",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "lat": {"type": "number"},
+                            "lon": {"type": "number"},
+                            "valid_time": {"type": "string", "description": "YYYY-MM-DD HH:MM:SS format"},
+                            "lead_time_hours": {"type": "integer"}
+                        },
+                        "required": ["lat", "lon", "valid_time", "lead_time_hours"]
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "get_model_weights",
+                    "description": "Get individual model blending weights",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "lat": {"type": "number"},
+                            "lon": {"type": "number"},
+                            "valid_time": {"type": "string"},
+                            "lead_time_hours": {"type": "integer"}
+                        },
+                        "required": ["lat", "lon", "valid_time", "lead_time_hours"]
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "get_model_comparison",
+                    "description": "Compare candidate models",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "lat": {"type": "number"},
+                            "lon": {"type": "number"},
+                            "valid_time": {"type": "string"},
+                            "lead_time_hours": {"type": "integer"}
+                        },
+                        "required": ["lat", "lon", "valid_time", "lead_time_hours"]
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "get_forecast_explanation",
+                    "description": "Explain the forecast and model weights",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "lat": {"type": "number"},
+                            "lon": {"type": "number"},
+                            "valid_time": {"type": "string"},
+                            "lead_time_hours": {"type": "integer"}
+                        },
+                        "required": ["lat", "lon", "valid_time", "lead_time_hours"]
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "get_uncertainty",
+                    "description": "Get uncertainty and disagreement values",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "lat": {"type": "number"},
+                            "lon": {"type": "number"},
+                            "valid_time": {"type": "string"},
+                            "lead_time_hours": {"type": "integer"}
+                        },
+                        "required": ["lat", "lon", "valid_time", "lead_time_hours"]
+                    }
+                }
+            }
+        ]
+
         payload = {
             "model": self.model_name,
             "messages": messages,
+            "tools": tools,
             "temperature": 0.01,
             "max_tokens": 400
         }
-        
+
         try:
             resp = requests.post(f"{self.api_base}/chat/completions", headers=headers, json=payload, timeout=30)
             resp.raise_for_status()
             data = resp.json()
-            return data["choices"][0]["message"]["content"].strip()
+            message = data["choices"][0]["message"]
+
+            # If the model natively called a tool, translate it to the fallback JSON schema text
+            # so the run_interaction loop continues normally
+            if message.get("tool_calls"):
+                tc = message["tool_calls"][0]
+                action = tc["function"].get("name")
+                args_str = tc["function"].get("arguments", "{}")
+                try:
+                    args = json.loads(args_str)
+                except json.JSONDecodeError:
+                    args = {}
+                return json.dumps({"action": action, "args": args})
+
+            # If the model returned text (e.g. asking for location or answering natively)
+            content = message.get("content") or ""
+            return json.dumps({"action": "answer", "text": content.strip()})
         except Exception as e:
             self.logger.error(f"External API call failed: {e}")
             return f'{{"action": "answer", "text": "AETHER encountered an API error: {str(e)}"}}'
@@ -146,10 +257,43 @@ To provide an answer to the user or to REFUSE an illegal request, return ONLY JS
 
     def run_interaction(self, user_msg: str, max_turns=5):
         messages = [
-            {"role": "system", "content": self.system_prompt},
-            {"role": "user", "content": user_msg}
+            {"role": "system", "content": self.system_prompt}
         ]
-        
+
+        # 1. Local Optimization Fast-Path (Requirement #8)
+        import re
+        lat_lon_match = re.search(r'Use lat ([\-\d\.]+), lon ([\-\d\.]+) for', user_msg)
+        vt_match = re.search(r"valid_time '([^']+)' with lead_time_hours (\d+)", user_msg)
+
+        if lat_lon_match and vt_match:
+            lat = float(lat_lon_match.group(1))
+            lon = float(lat_lon_match.group(2))
+            vt_str = vt_match.group(1)
+            lt = int(vt_match.group(2))
+
+            # Simple keyword matching for intent
+            msg_lower = user_msg.lower()
+            if "weight" in msg_lower:
+                action = "get_model_weights"
+            elif "compare" in msg_lower or "comparison" in msg_lower or "difference" in msg_lower:
+                action = "get_model_comparison"
+            elif "explain" in msg_lower or "why" in msg_lower or "reason" in msg_lower:
+                action = "get_forecast_explanation"
+            elif "uncertain" in msg_lower or "confidence" in msg_lower or "disagree" in msg_lower or "spread" in msg_lower:
+                action = "get_uncertainty"
+            else:
+                action = "predict_forecast"
+
+            args = {"lat": lat, "lon": lon, "valid_time": vt_str, "lead_time_hours": lt}
+            self.logger.info(f"Local Optimization: Fast-path executing {action} directly to bypass LLM tool-calling delay.")
+
+            tool_result = self.execute_tool(action, args)
+            messages.append({"role": "user", "content": user_msg})
+            messages.append({"role": "assistant", "content": f'{{"action": "{action}", "args": {json.dumps(args)}}}'})
+            messages.append({"role": "user", "content": f"Tool Result:\n{tool_result}\nNow formulate the final answer. If the request was illegal, output an answer action refusing."})
+        else:
+            messages.append({"role": "user", "content": user_msg})
+
         for _ in range(max_turns):
             if self.provider_type == "local":
                 response_text = self._generate_local(messages)
