@@ -1,8 +1,3 @@
-"""
-SIH26081 Multi-Model Ensemble Forecasting API
-FastAPI backend connecting to existing PyTorch forecasting engine and AETHER assistant
-"""
-
 import sys
 import logging
 import re
@@ -81,14 +76,59 @@ aether_assistant: AETHERAssistant = None
 # Global geocoder instance
 geolocator = Nominatim(user_agent="sih_aether_app")
 
+from datetime import timedelta
+# BASE TIME FOR DATE MATH
+CURRENT_SIMULATED_TIME = datetime(2026, 9, 4, 12, 0, 0)
+
 def extract_area_name(prompt_lower):
-    # Try to heuristically extract location name, else fallback or use full prompt
-    # A simple but practical implementation for this prototype
-    # If it sees keywords like 'in', 'at', 'for'
-    match = re.search(r'(?:in|at|for)\s+([a-zA-Z\s]+?)(?:\s+(?:what|time|forecast|weather|temperature)|\!|\?|$)', prompt_lower)
+    # Use word boundaries so 'at' inside 'what' is skipped
+    match = re.search(r'\b(?:in|at|for)\b\s+([a-zA-Z\s]+?)(?:\s+(?:what|time|now|forecast|weather|temperature|tomorrow|today|next|on|at|\d)|\!|\?|\.|&|$)', prompt_lower)
     if match:
         return match.group(1).strip()
-    return prompt_lower[:50].strip() # fallback
+    return None
+
+def resolve_temporal_parameters(prompt_lower):
+    target_date = None
+    
+    if "day after tomorrow" in prompt_lower or "in 2 days" in prompt_lower:
+        target_date = CURRENT_SIMULATED_TIME + timedelta(days=2)
+    elif "tomorrow" in prompt_lower:
+        target_date = CURRENT_SIMULATED_TIME + timedelta(days=1)
+    elif "today" in prompt_lower:
+        target_date = CURRENT_SIMULATED_TIME
+    elif re.search(r"\b(september|sep|october|oct|november|nov)\s+(\d+)\b", prompt_lower):
+        m_match = re.search(r"\b(september|sep|october|oct|november|nov)\s+(\d+)\b", prompt_lower)
+        month_str = m_match.group(1)[:3]
+        day = int(m_match.group(2))
+        month_map = {'sep': 9, 'oct': 10, 'nov': 11}
+        target_date = datetime(2026, month_map[month_str], day)
+        
+    hour = 12 # Default to noon if no time specified, as in original baseline
+    
+    time_match = re.search(r"\b(?:at\s+)(\d+)(?:\:00)?\s*(am|pm)?\b", prompt_lower)
+    if not time_match:
+        time_match = re.search(r"\b(\d+)(?:\:00)?\s*(am|pm)\b", prompt_lower)
+        
+    if time_match:
+        h = int(time_match.group(1))
+        meridiem = time_match.group(2)
+        if meridiem == 'pm' and h < 12:
+            h += 12
+        elif meridiem == 'am' and h == 12:
+            h = 0
+        hour = h
+
+    if target_date is None:
+        target_date = CURRENT_SIMULATED_TIME
+        
+    target_time = target_date.replace(hour=hour, minute=0, second=0, microsecond=0)
+    
+    lead_time = int((target_time - CURRENT_SIMULATED_TIME).total_seconds() / 3600)
+    
+    if lead_time < 0:
+        lead_time = 0
+        
+    return target_time.strftime("%Y-%m-%d %H:%M:%S"), lead_time
 
 def geocode_location(location_name):
     # Append 'Hyderabad, India' for restricted search
@@ -106,13 +146,9 @@ def geocode_location(location_name):
 
 @app.on_event("startup")
 async def startup_event():
-    """Initialize forecasting engine and AETHER assistant on startup"""
     global forecasting_engine, aether_assistant
-
     logger.info("Initializing SIH26081 Forecasting System...")
-
     try:
-        # Initialize Forecasting Engine
         model_path = PROJECT_ROOT / "models" / "blender" / "mlp_gating_model"
         logger.info("Loading PyTorch forecasting engine...")
         forecasting_engine = ForecastingEngine(
@@ -121,7 +157,6 @@ async def startup_event():
         )
         logger.info("✓ Forecasting engine loaded")
 
-        # Initialize AETHER Assistant
         logger.info("Loading AETHER conversational assistant (this may take 30-60 seconds)...")
         aether_assistant = AETHERAssistant(
             engine=forecasting_engine,
@@ -129,22 +164,16 @@ async def startup_event():
         )
         logger.info("✓ AETHER assistant loaded and ready")
 
-        logger.info("="*80)
-        logger.info("SIH26081 API Server Ready")
-        logger.info("="*80)
-
     except Exception as e:
         logger.error(f"Failed to initialize: {e}")
         raise
 
 @app.get("/")
 async def root():
-    """Serve the main dashboard interface"""
     return {"message": "API is operational. Frontend has been removed."}
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint"""
     return {
         "status": "healthy",
         "forecasting_engine": "ready" if forecasting_engine else "not initialized",
@@ -153,22 +182,11 @@ async def health_check():
 
 @app.post("/api/forecast", response_model=ForecastResponse)
 async def get_forecast(request: ForecastRequest):
-    """
-    Get forecast from the multi-model ensemble system
-
-    Returns candidate forecasts (IFS, GFS, ICON), learned dynamic weights,
-    blended prediction, uncertainty estimates, and confidence metrics.
-    """
     if not forecasting_engine:
         raise HTTPException(status_code=503, detail="Forecasting engine not initialized")
-
     try:
-        # Parse the datetime string
         valid_time = datetime.fromisoformat(request.valid_time.replace(' ', 'T'))
-
-        # Get prediction from forecasting engine
-        logger.info(f"Forecast request: lat={request.lat}, lon={request.lon}, "
-                   f"valid_time={valid_time}, lead_time={request.lead_time_hours}h")
+        logger.info(f"Forecast request: lat={request.lat}, lon={request.lon}, valid_time={valid_time}, lead_time={request.lead_time_hours}h")
 
         result = forecasting_engine.predict_forecast(
             valid_time=valid_time,
@@ -193,59 +211,41 @@ async def get_forecast(request: ForecastRequest):
 
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat_with_aether(request: ChatRequest):
-    """
-    Chat with AETHER conversational assistant
-
-    Intercepts the prompt to inject context-aware coordinates and date boundaries
-    before passing to the LLM agent.
-    """
     if not aether_assistant:
         raise HTTPException(status_code=503, detail="AETHER assistant not initialized")
 
     try:
         prompt_lower = request.prompt.lower()
+        logger.info(f"1. AETHER parsed intent/location/time from: '{request.prompt}'")
 
         # 1. Location Extraction & Geographic Resolution via Geopy
         extracted_area_name = extract_area_name(prompt_lower)
-        mapped_lat, mapped_lon, loc_name = geocode_location(extracted_area_name)
         
-        # 2. Date/Lead Time Boundary Injection
-        valid_time_override = None
-        if 'tomorrow' in prompt_lower:
-            valid_time_override = '2026-09-05 12:00:00'
-            lead_time = 24
-        elif 'next monday' in prompt_lower:
-            valid_time_override = '2026-09-07 12:00:00'
-            lead_time = 72
-        elif 'day after tomorrow' in prompt_lower:
-            valid_time_override = '2026-09-06 12:00:00'
-            lead_time = 48
-        elif 'in 2 days' in prompt_lower:
-            valid_time_override = '2026-09-06 12:00:00'
-            lead_time = 48
-
-        has_time_info = bool(re.search(r'\b(2026|aug|august|time|hour|h|hr|-08-|26th|today)\b', prompt_lower))
-
         injections = []
-        if mapped_lat is not None and mapped_lon is not None:
-            area_display = loc_name.split(',')[0] if loc_name else extracted_area_name.title()
-            injections.append(f"[System override: The user is asking about {area_display}. Use lat {mapped_lat:.4f}, lon {mapped_lon:.4f} for your tool calls. CRITICAL: In your final response, refer to the location ONLY by its name \"{area_display}\". Do not mention the latitude and longitude.]")
-
-        if valid_time_override:
-            injections.append(f"[System override: The user requested a relative future date. Translating to valid_time '{valid_time_override}' with lead_time_hours {lead_time} based on the current date 2026-09-04.]")
-        elif not has_time_info and 'tomorrow' not in prompt_lower and 'next' not in prompt_lower:
-            injections.append("[System override: Default to valid_time '2026-09-04 12:00:00' with lead_time_hours 12]")
-
+        if extracted_area_name:
+            mapped_lat, mapped_lon, loc_name = geocode_location(extracted_area_name)
+            
+            if mapped_lat is not None and mapped_lon is not None:
+                # 2. Date/Lead Time Dynamic Resolution
+                vt_str, lead_hours = resolve_temporal_parameters(prompt_lower)
+                
+                area_display = loc_name.split(',')[0] if loc_name else extracted_area_name.title()
+                
+                injections.append(f"[System override: The user is asking about {area_display}. Use lat {mapped_lat:.4f}, lon {mapped_lon:.4f} for your tool calls. CRITICAL: In your final response, refer to the location ONLY by its name \"{area_display}\". Do not mention the latitude and longitude.]")
+                injections.append(f"[System override: The user requested a specific time. Translating to valid_time '{vt_str}' with lead_time_hours {lead_hours}]")
+        
         enriched_prompt = request.prompt
         if injections:
             enriched_prompt += " " + " ".join(injections)
 
-        logger.info(f"AETHER query (Enriched): {enriched_prompt}")
-
-        # Process the query through AETHER
+        logger.info(f"2. ForecastingEngine execution prepared via AETHER override.")
+        
+        # Process the query through AETHER (which will then natively invoke ForecastingEngine)
+        logger.info(f"3. ForecastingEngine execution started")
         reply = aether_assistant.run_interaction(enriched_prompt)
+        logger.info(f"4. External Gemini synthesis started")
 
-        logger.info(f"AETHER response: {reply[:100]}...")
+        logger.info(f"5. External Gemini response obtained.")
 
         return ChatResponse(reply=reply)
 
@@ -255,23 +255,16 @@ async def chat_with_aether(request: ChatRequest):
 
 @app.get("/api/available-times")
 async def get_available_times():
-    """Get available test dates and lead times"""
     if not forecasting_engine or forecasting_engine.dataset is None:
         raise HTTPException(status_code=503, detail="Forecasting engine not initialized")
-
     try:
         df = forecasting_engine.dataset
-
-        # Get unique values
         valid_times = sorted(df['valid_time'].dt.strftime('%Y-%m-%d %H:%M:%S').unique())
         lead_times = sorted(df['lead_time'].unique().tolist())
-
-        # Get spatial bounds
         lat_min, lat_max = df['latitude'].min(), df['latitude'].max()
         lon_min, lon_max = df['longitude'].min(), df['longitude'].max()
-
         return {
-            "valid_times": valid_times[:50],  # Return first 50 times
+            "valid_times": valid_times[:50],  
             "lead_times": [int(x) for x in lead_times],
             "spatial_bounds": {
                 "lat_min": float(lat_min),
@@ -283,9 +276,6 @@ async def get_available_times():
     except Exception as e:
         logger.error(f"Failed to get available times: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
-# Mount static files placeholder (frontend removed)
-# app.mount("/static", ...)
 
 if __name__ == "__main__":
     import uvicorn
