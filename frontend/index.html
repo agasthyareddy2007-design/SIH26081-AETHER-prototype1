@@ -401,7 +401,7 @@ I’m currently under development — please support us as we build me into a sm
                     lead_time_hours: leadTimeHours
                 };
 
-                const response = await fetch('/api/forecast', {
+                const response = await fetch('https://sih26081-aether-1050720405878.asia-south1.run.app/api/forecast', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
