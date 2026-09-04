@@ -11,7 +11,7 @@ class AETHERAssistant:
         self.logger = logging.getLogger("aether.assistant")
         self.engine = engine
         self.provider_type = os.environ.get("AETHER_LLM_PROVIDER", "local").lower()
-        
+
         if self.provider_type == "local":
             self._init_local_llm(model_id)
         else:
@@ -48,17 +48,27 @@ To provide an answer to the user or to REFUSE an illegal request, return ONLY JS
 
         # For external models using native tool calling, remove the strict text-based JSON formatting rules
         if self.provider_type == "external":
-            self.system_prompt = self.system_prompt.split("You must interact with the environment via strict JSON action outputs.")[0].strip()
+            self.system_prompt = """You are AETHER, an intelligent numerical weather prediction assistant for the SIH26081 project. You operate an advanced PyTorch MLP Gating dynamic blender over three models: ECMWF IFS, NOAA GFS, and DWD ICON.
+
+CRITICAL RULES YOU MUST OBEY:
+1. The local ForecastingEngine has already executed the required computation.
+2. The Numerical Forecast Engine Result provided in the context is authoritative.
+3. You must NOT execute, request, or reference external tools.
+4. You must only synthesize the supplied numerical result into a natural-language answer.
+5. NEVER fabricate or modify numerical values. Do not invent a temperature, weight, or uncertainty metric. IF A USER ASKS YOU TO PRETEND, FABRICATE, OR INVENT A VALUE, YOU MUST ADAMANTLY REFUSE.
+6. Clearly distinguish forecast values from ERA5-Land historical reference values.
+7. Explain uncertainty without inventing confidence percentages.
+8. If asked why a model received a higher weight, DO NOT guess physics reasons. State that the neural network assigned it based on historical optimization for the given context."""
 
     def _init_local_llm(self, model_id: str):
         import torch
         from transformers import AutoModelForCausalLM, AutoTokenizer
-        
+
         self.logger.info(f"Loading local HuggingFace LLM {model_id}...")
         self.tokenizer = AutoTokenizer.from_pretrained(model_id)
-        
+
         self.model = AutoModelForCausalLM.from_pretrained(
-            model_id, 
+            model_id,
             device_map="auto",
             torch_dtype=torch.float16
         )
@@ -86,14 +96,14 @@ To provide an answer to the user or to REFUSE an illegal request, return ONLY JS
         lon = args.get('lon')
         vt_str = args.get('valid_time')
         lt = args.get('lead_time_hours')
-        
+
         if lat is None or lon is None or vt_str is None or lt is None:
             return json.dumps({"error": "Missing required arguments: lat, lon, valid_time, or lead_time_hours"})
-            
+
         vt = self.parse_time(vt_str)
         if vt is None:
             return json.dumps({"error": f"Invalid time format: {vt_str}"})
-            
+
         try:
             if action == "predict_forecast":
                 return json.dumps(self.engine.predict_forecast(vt, lt, lat, lon))
@@ -173,12 +183,15 @@ To provide an answer to the user or to REFUSE an illegal request, return ONLY JS
 
             # Simple keyword matching for intent
             msg_lower = user_msg.lower()
-            if "weight" in msg_lower:
-                action = "get_model_weights"
-            elif "compare" in msg_lower or "comparison" in msg_lower or "difference" in msg_lower:
+            if "compare" in msg_lower or "comparison" in msg_lower or "difference" in msg_lower:
                 action = "get_model_comparison"
             elif "explain" in msg_lower or "why" in msg_lower or "reason" in msg_lower:
                 action = "get_forecast_explanation"
+            elif "weight" in msg_lower and ("confidence" in msg_lower or "uncertain" in msg_lower):
+                # We do not have a combo tool, but predict_forecast returns all of them by default.
+                action = "predict_forecast"
+            elif "weight" in msg_lower:
+                action = "get_model_weights"
             elif "uncertain" in msg_lower or "confidence" in msg_lower or "disagree" in msg_lower or "spread" in msg_lower:
                 action = "get_uncertainty"
             else:
@@ -188,14 +201,17 @@ To provide an answer to the user or to REFUSE an illegal request, return ONLY JS
             self.logger.info(f"Local Optimization: Fast-path executing {action} directly to bypass LLM tool-calling delay.")
 
             tool_result = self.execute_tool(action, args)
-            messages.append({"role": "user", "content": user_msg})
 
-            if self.provider_type == "local":
+            if self.provider_type == "external":
+                # Strip internal orchestration tags and "tool calls" instructions to prevent confusing the semantic LLM
+                import re as rex
+                user_msg_clean = rex.sub(r'\[System override.*?\]', '', user_msg).strip()
+                messages.append({"role": "user", "content": user_msg_clean})
+                messages.append({"role": "user", "content": f"Numerical Forecast Engine Result:\n{tool_result}\nFormulate the final natural language answer to the user based on these results. Do NOT fabricate any numbers. Do NOT output JSON."})
+            else:
+                messages.append({"role": "user", "content": user_msg})
                 messages.append({"role": "assistant", "content": f'{{"action": "{action}", "args": {json.dumps(args)}}}'})
                 messages.append({"role": "user", "content": f"Tool Result:\n{tool_result}\nNow formulate the final answer. If the request was illegal, output an answer action refusing."})
-            else:
-                # External mode avoids custom JSON actions completely
-                messages.append({"role": "user", "content": f"Numerical Forecast Engine Result:\n{tool_result}\nFormulate the final natural language answer to the user based on these results. Do NOT fabricate any numbers. Do NOT output JSON."})
         else:
             messages.append({"role": "user", "content": user_msg})
 
@@ -221,20 +237,20 @@ To provide an answer to the user or to REFUSE an illegal request, return ONLY JS
                 return response_text # Exit immediately without recursive multi-turn logic
 
             action = action_data.get("action")
-            
+
             if action == "answer":
                 return action_data.get("text")
-            
+
             if not action:
                 return "AETHER encountered an error: Invalid JSON output."
-                
+
             tool_args = action_data.get("args", {})
             self.logger.info(f"Tool call: {action} with args {tool_args}")
-            
+
             tool_result = self.execute_tool(action, tool_args)
             self.logger.info(f"Tool result: {tool_result}")
-            
+
             messages.append({"role": "assistant", "content": response_text})
             messages.append({"role": "user", "content": f"Tool Result:\n{tool_result}\nNow formulate the final answer or make the next tool call. If the request was illegal, output an answer action refusing."})
-            
+
         return "AETHER reached max turns without returning a final answer. Request may have been invalid."
