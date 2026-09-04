@@ -20,8 +20,8 @@ def check_sha(path, expected):
 check_sha(Path("models/blender/mlp_gating_model.pth"), "11180fb2b72d49154434ecad3276281b305277d0eeb2098df86d4485d5ad32b4")
 
 # 2. Check the meta files exist (used by the engine internally)
-if not Path("models/blender/feature_means_stds.npy").exists():
-    print("FATAL: feature_means_stds.npy missing")
+if not Path("models/blender/mlp_gating_model_stats.npy").exists():
+    print("FATAL: mlp_gating_model_stats.npy missing")
     sys.exit(1)
 if not Path("models/blender/mlp_gating_model_meta.json").exists():
     print("FATAL: mlp_gating_model_meta.json missing")

@@ -11,7 +11,7 @@ om_cache/
 models/blender/archive/
 models/blender/xgboost_*.pkl
 models/blender/mlp_gating.pth
-models/blender/*_stats.npy
+models/blender/mlp_gating_stats.npy
 models/blender/static_weights.yaml
 
 # 4. Logs & Local stdout caches (CATEGORY G)
