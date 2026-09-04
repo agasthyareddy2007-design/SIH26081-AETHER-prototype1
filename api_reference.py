@@ -20,7 +20,8 @@ from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 import time
 
 # Add the AI models project to Python path
-sys.path.insert(0, "/home/agasthya/ai models")
+PROJECT_ROOT = Path(__file__).parent.resolve()
+sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.engine.forecasting_engine import ForecastingEngine
 from src.engine.aether_assistant import AETHERAssistant
@@ -112,7 +113,7 @@ async def startup_event():
 
     try:
         # Initialize Forecasting Engine
-        model_path = Path("/home/agasthya/ai models/models/blender/mlp_gating_model")
+        model_path = PROJECT_ROOT / "models" / "blender" / "mlp_gating_model"
         logger.info("Loading PyTorch forecasting engine...")
         forecasting_engine = ForecastingEngine(
             config_path=None,

@@ -1,9 +1,8 @@
+import os
 import json
 import logging
-import pandas as pd
 from datetime import datetime
-import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+import requests
 
 from src.engine.forecasting_engine import ForecastingEngine
 
@@ -11,16 +10,12 @@ class AETHERAssistant:
     def __init__(self, engine: ForecastingEngine, model_id: str = "Qwen/Qwen2.5-3B-Instruct"):
         self.logger = logging.getLogger("aether.assistant")
         self.engine = engine
+        self.provider_type = os.environ.get("AETHER_LLM_PROVIDER", "local").lower()
         
-        self.logger.info(f"Loading LLM {model_id}...")
-        self.tokenizer = AutoTokenizer.from_pretrained(model_id)
-        
-        self.model = AutoModelForCausalLM.from_pretrained(
-            model_id, 
-            device_map="auto",
-            torch_dtype=torch.float16
-        )
-        self.logger.info("AETHER Assistant LLM loaded and ready.")
+        if self.provider_type == "local":
+            self._init_local_llm(model_id)
+        else:
+            self._init_external_llm()
 
         self.system_prompt = """You are AETHER, an intelligent numerical weather prediction assistant for the SIH26081 project. You operate an advanced PyTorch MLP Gating dynamic blender over three models: ECMWF IFS, NOAA GFS, and DWD ICON.
 
@@ -50,6 +45,30 @@ Available tools:
 To provide an answer to the user or to REFUSE an illegal request, return ONLY JSON in this format:
 {"action": "answer", "text": "Your natural language response here."}
 """
+
+    def _init_local_llm(self, model_id: str):
+        import torch
+        from transformers import AutoModelForCausalLM, AutoTokenizer
+        
+        self.logger.info(f"Loading local HuggingFace LLM {model_id}...")
+        self.tokenizer = AutoTokenizer.from_pretrained(model_id)
+        
+        self.model = AutoModelForCausalLM.from_pretrained(
+            model_id, 
+            device_map="auto",
+            torch_dtype=torch.float16
+        )
+        self.logger.info("Local AETHER Assistant LLM loaded and ready.")
+
+    def _init_external_llm(self):
+        self.logger.info("Initializing external LLM provider...")
+        self.api_key = os.environ.get("EXTERNAL_LLM_API_KEY")
+        if not self.api_key:
+            self.logger.warning("EXTERNAL_LLM_API_KEY environment variable is missing but required for cloud mode.")
+            
+        self.api_base = os.environ.get("EXTERNAL_LLM_API_BASE", "https://api.openai.com/v1")
+        self.model_name = os.environ.get("EXTERNAL_LLM_MODEL", "gpt-4o-mini")
+        self.logger.info(f"External AETHER Assistant initialized with endpoint: {self.api_base} (Model: {self.model_name})")
 
     def parse_time(self, t_str):
         if not t_str: return None
@@ -87,29 +106,56 @@ To provide an answer to the user or to REFUSE an illegal request, return ONLY JS
         except Exception as e:
             return json.dumps({"error": str(e)})
 
+    def _generate_external(self, messages):
+        if not getattr(self, 'api_key', None):
+            return '{"action": "answer", "text": "AETHER configuration error: EXTERNAL_LLM_API_KEY is missing."}'
+            
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "model": self.model_name,
+            "messages": messages,
+            "temperature": 0.01,
+            "max_tokens": 400
+        }
+        
+        try:
+            resp = requests.post(f"{self.api_base}/chat/completions", headers=headers, json=payload, timeout=30)
+            resp.raise_for_status()
+            data = resp.json()
+            return data["choices"][0]["message"]["content"].strip()
+        except Exception as e:
+            self.logger.error(f"External API call failed: {e}")
+            return f'{{"action": "answer", "text": "AETHER encountered an API error: {str(e)}"}}'
+
+    def _generate_local(self, messages):
+        prompt = self.tokenizer.apply_chat_template(
+            messages, tokenize=False, add_generation_prompt=True
+        )
+        inputs = self.tokenizer([prompt], return_tensors="pt").to(self.model.device)
+        outputs = self.model.generate(
+            **inputs,
+            max_new_tokens=400,
+            temperature=0.01,
+            do_sample=False,
+            pad_token_id=self.tokenizer.eos_token_id
+        )
+        return self.tokenizer.decode(outputs[0][inputs.input_ids.shape[1]:], skip_special_tokens=True).strip()
+
     def run_interaction(self, user_msg: str, max_turns=5):
         messages = [
             {"role": "system", "content": self.system_prompt},
             {"role": "user", "content": user_msg}
         ]
         
-        for turn in range(max_turns):
-            prompt = self.tokenizer.apply_chat_template(
-                messages, 
-                tokenize=False, 
-                add_generation_prompt=True
-            )
-            inputs = self.tokenizer([prompt], return_tensors="pt").to(self.model.device)
-            outputs = self.model.generate(
-                **inputs,
-                max_new_tokens=400,
-                temperature=0.01,
-                do_sample=False,
-                pad_token_id=self.tokenizer.eos_token_id
-            )
-            
-            response_text = self.tokenizer.decode(outputs[0][inputs.input_ids.shape[1]:], skip_special_tokens=True).strip()
-            
+        for _ in range(max_turns):
+            if self.provider_type == "local":
+                response_text = self._generate_local(messages)
+            else:
+                response_text = self._generate_external(messages)
+                
             if response_text.startswith("```json"):
                 response_text = response_text[7:]
             if response_text.endswith("```"):

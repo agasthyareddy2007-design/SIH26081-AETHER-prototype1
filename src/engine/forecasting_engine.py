@@ -18,7 +18,7 @@ PRODUCTION_MODEL_SHA256 = "11180fb2b72d49154434ecad3276281b305277d0eeb2098df86d4
 class ForecastingEngine:
     def __init__(self, config_path: Path, model_path: Path, enable_persistence: bool = True):
         self.logger = logging.getLogger("aether.engine")
-        self.project_root = Path("/home/agasthya/ai models")
+        self.project_root = Path(__file__).resolve().parent.parent.parent
         self.blender = DynamicBlender()
         self.blender.load(model_path)
         self.uncertainty_estimator = UncertaintyEstimator()

@@ -27,7 +27,7 @@ xgboost:
   gpu_enabled: true
 
 paths:
-  project_root: "/home/agasthya/ai models"
+  project_root: "."
   data_root: "data"
   models_root: "models"
   logs_root: "logs"

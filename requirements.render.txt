@@ -1,0 +1,23 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+# Web
+fastapi>=0.100.0
+uvicorn>=0.23.0
+pydantic>=2.0.0
+requests==2.34.2
+python-dotenv==1.2.3
+
+# Data
+pandas==3.0.5
+numpy==2.5.2
+xarray==2026.7.0
+scikit-learn==1.9.0
+tqdm==4.70.0
+scipy==1.18.1
+
+# DB & Geo
+psycopg2-binary>=2.9.0
+geopy>=2.4.0
+
+# PyTorch CPU
+torch==2.14.0+cpu
