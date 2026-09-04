@@ -347,16 +347,22 @@ I’m currently under development — please support us as we build me into a sm
     <script>
         let chartInstance = null;
 
+        // Format to YYYY-MM-DDTHH:mm for datetime-local
+        const pad = (n) => String(n).padStart(2, '0');
+        const formatDate = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+
         // Initialize default valid time (Tomorrow 12:00 PM)
         function initDefaults() {
             const now = new Date();
             const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 12, 0, 0);
 
-            // Format to YYYY-MM-DDTHH:mm for datetime-local
-            const pad = (n) => String(n).padStart(2, '0');
-            const formatted = `${tomorrow.getFullYear()}-${pad(tomorrow.getMonth() + 1)}-${pad(tomorrow.getDate())}T${pad(tomorrow.getHours())}:${pad(tomorrow.getMinutes())}`;
+            document.getElementById('validTimeInput').value = formatDate(tomorrow);
+            
+            // Limit date picker selection to supported forecast range (up to 144 hours / 6 days)
+            const maxDate = new Date(now.getTime() + 144 * 60 * 60 * 1000);
+            document.getElementById('validTimeInput').max = formatDate(maxDate);
+            document.getElementById('validTimeInput').min = formatDate(now);
 
-            document.getElementById('validTimeInput').value = formatted;
             updateLeadTime();
         }
 
@@ -368,8 +374,24 @@ I’m currently under development — please support us as we build me into a sm
             const now = new Date();
 
             // Difference in hours
-            const diffHours = Math.max(0, Math.round((targetDate - now) / (1000 * 60 * 60)));
-            document.getElementById('leadTimeInput').value = diffHours;
+            const diffHours = Math.round((targetDate - now) / (1000 * 60 * 60));
+            document.getElementById('leadTimeInput').value = Math.max(0, diffHours);
+            
+            const fetchBtn = document.getElementById('fetchBtn');
+            const errorBanner = document.getElementById('errorBanner');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            if (diffHours < 0 || diffHours > 144) {
+                fetchBtn.disabled = true;
+                errorMessage.innerText = "Please select a forecast time within the available prediction window.";
+                errorBanner.classList.remove('hidden');
+            } else {
+                fetchBtn.disabled = false;
+                // Only hide error banner on change if the message was about time limits (or just hide it)
+                if (errorMessage.innerText.includes("prediction window")) {
+                    errorBanner.classList.add('hidden');
+                }
+            }
         }
 
         document.getElementById('validTimeInput').addEventListener('change', updateLeadTime);
@@ -447,6 +469,15 @@ I’m currently under development — please support us as we build me into a sm
                 const rawValidTime = document.getElementById('validTimeInput').value;
                 if (!rawValidTime) throw new Error("Please select a target valid date and time.");
 
+                // Validate both date and time against supported range (0 to 144 hours)
+                const targetDate = new Date(rawValidTime);
+                const now = new Date();
+                const diffHoursTemp = Math.round((targetDate - now) / (1000 * 60 * 60));
+                
+                if (diffHoursTemp < 0 || diffHoursTemp > 144) {
+                    throw new Error("Please select a forecast time within the available prediction window.");
+                }
+
                 // Format valid_time as YYYY-MM-DD HH:MM:SS
                 const validTimeFormatted = rawValidTime.replace('T', ' ') + ":00";
                 const leadTimeHours = parseInt(document.getElementById('leadTimeInput').value) || 0;
@@ -476,9 +507,21 @@ I’m currently under development — please support us as we build me into a sm
                 errorMessage.innerText = err.message || "Failed to communicate with Forecasting Engine.";
                 errorBanner.classList.remove('hidden');
             } finally {
-                fetchBtn.disabled = false;
                 fetchSpinner.classList.add('hidden');
                 fetchBtnText.innerText = "Run Dynamic Blending";
+                
+                // Re-evaluate button state based on current input validity
+                const currentValidTime = document.getElementById('validTimeInput').value;
+                if (currentValidTime) {
+                    const diffHours = Math.round((new Date(currentValidTime) - new Date()) / (1000 * 60 * 60));
+                    if (diffHours < 0 || diffHours > 144) {
+                        fetchBtn.disabled = true;
+                    } else {
+                        fetchBtn.disabled = false;
+                    }
+                } else {
+                    fetchBtn.disabled = false;
+                }
             }
         }
 
