@@ -108,8 +108,16 @@ class DynamicBlender:
         C = df[self.candidates].values
         return torch.FloatTensor(X_norm.copy()), torch.FloatTensor(C.copy())
 
-    def predict_weights(self, df):
-        """Produce normalized array of weights: w_IFS, w_ICON, w_GFS"""
+    def predict_weights(self, df, return_logits=False):
+        """Produce normalized array of weights: w_IFS, w_ICON, w_GFS
+
+        Args:
+            df: Input dataframe with features
+            return_logits: If True, also return pre-softmax logits for explainability
+
+        Returns:
+            dict with weights, and optionally logits if return_logits=True
+        """
         if self.model is None:
             raise ValueError("Model not trained.")
 
@@ -117,14 +125,25 @@ class DynamicBlender:
 
         self.model.eval()
         with torch.no_grad():
-            _, weights = self.model(t_X, t_C)
+            logits = self.model.net(t_X)
+            weights = torch.softmax(logits, dim=1)
 
         w_np = weights.numpy()
-        return {
+        result = {
             'IFS': w_np[:, 0],
             'ICON': w_np[:, 1],
             'GFS': w_np[:, 2]
         }
+
+        if return_logits:
+            logits_np = logits.numpy()
+            result['logits'] = {
+                'IFS': logits_np[:, 0],
+                'ICON': logits_np[:, 1],
+                'GFS': logits_np[:, 2]
+            }
+
+        return result
 
     def predict(self, df):
         """Generate final blended forecast."""

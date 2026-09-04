@@ -145,8 +145,15 @@ class ForecastingEngine:
         features = ['IFS', 'ICON', 'GFS', 'hour_sin', 'hour_cos', 'doy_sin', 'doy_cos', 'lead_time', 'lead_time_sqrt', 'latitude', 'longitude']
         df_input = pd.DataFrame([[row[f] for f in features]], columns=features)
 
-        weights_dict = self.blender.predict_weights(df_input)
-        weights = {k: float(v[0]) for k, v in weights_dict.items()}
+        # Get weights and optionally logits for explainability
+        weights_dict = self.blender.predict_weights(df_input, return_logits=True)
+        weights = {k: float(v[0]) for k, v in weights_dict.items() if k != 'logits'}
+
+        # Extract pre-softmax logits for transparency
+        logits = None
+        if 'logits' in weights_dict:
+            logits = {k: float(v[0]) for k, v in weights_dict['logits'].items()}
+
         blended_forecast = float(self.blender.predict(df_input)[0])
 
         uncertainty = self.uncertainty_estimator.estimate(
@@ -199,6 +206,60 @@ class ForecastingEngine:
                 self.logger.warning(f"Database persistence failed (non-critical): {type(e).__name__}")
                 persistence_status = "failed"
 
+        # Calculate individual model contributions for transparency
+        model_contributions = {
+            k: round(model_forecasts[k] * weights[k], 3) for k in ['IFS', 'GFS', 'ICON']
+        }
+
+        # Build explainability metadata (optional fields for transparency)
+        explainability = {
+            'gating_network': {
+                'architecture': 'PyTorch MLPGatingNet',
+                'input_features': features,
+                'feature_values': {f: round(float(row[f]), 4) for f in features},
+                'hidden_layers': [16],
+                'activation': 'ReLU',
+                'output_activation': 'Softmax'
+            },
+            'gating_scores': logits if logits else None,
+            'model_contributions': model_contributions,
+            'computation_trace': {
+                'step_1_context': {
+                    'valid_time': valid_time.isoformat(),
+                    'lead_time_hours': int(row['lead_time']),
+                    'location': {'lat': lat, 'lon': lon}
+                },
+                'step_2_nwp_inputs': model_forecasts,
+                'step_3_features': {
+                    'temporal': {
+                        'hour_sin': round(float(row['hour_sin']), 4),
+                        'hour_cos': round(float(row['hour_cos']), 4),
+                        'doy_sin': round(float(row['doy_sin']), 4),
+                        'doy_cos': round(float(row['doy_cos']), 4),
+                        'lead_time': int(row['lead_time']),
+                        'lead_time_sqrt': round(float(row['lead_time_sqrt']), 4)
+                    },
+                    'spatial': {
+                        'latitude': lat,
+                        'longitude': lon
+                    },
+                    'model_forecasts': model_forecasts
+                },
+                'step_4_gating_scores': logits,
+                'step_5_softmax_weights': weights,
+                'step_6_weighted_contributions': model_contributions,
+                'step_7_ensemble_blend': round(blended_forecast, 2),
+                'step_8_uncertainty': round(uncertainty['uncertainty_value'], 2),
+                'step_9_final_forecast': round(blended_forecast, 2)
+            },
+            'model_metadata': {
+                'model_sha256': PRODUCTION_MODEL_SHA256,
+                'model_type': 'PyTorch MLP Gating Network',
+                'training_objective': 'Minimize ensemble RMSE via learned soft model weights',
+                'candidates': ['IFS', 'ICON', 'GFS']
+            }
+        }
+
         # Return forecast result with persistence metadata
         result = {
             'forecast': round(blended_forecast, 2),
@@ -213,7 +274,8 @@ class ForecastingEngine:
             'confidence': uncertainty['confidence_level'],
             'reference_value': None,
             'provenance': provenance_info,
-            'persistence_status': persistence_status
+            'persistence_status': persistence_status,
+            'explainability': explainability
         }
 
         return result
