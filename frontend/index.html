@@ -47,309 +47,342 @@
         .glow-brand {
             box-shadow: 0 0 25px -5px rgba(20, 184, 166, 0.3);
         }
+        .app-shell {
+            display: grid;
+            grid-template-rows: auto 1fr;
+            min-height: 100vh;
+        }
+        .main-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 380px;
+            gap: 2rem;
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 2rem;
+            align-items: start;
+        }
+        @media (max-width: 1279px) {
+            .main-grid {
+                grid-template-columns: minmax(0, 1fr) 340px;
+                gap: 1.5rem;
+            }
+        }
+        @media (max-width: 1023px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+                padding: 1.5rem;
+            }
+        }
+        @media (max-width: 767px) {
+            .main-grid {
+                padding: 1rem;
+            }
+        }
     </style>
 </head>
-<body class="min-h-screen flex flex-col antialiased selection:bg-brand-500 selection:text-white">
+<body class="antialiased selection:bg-brand-500 selection:text-white">
 
-    <!-- Top Navigation -->
-    <header class="border-b border-dark-border bg-dark-surface/80 backdrop-blur sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div class="h-9 w-9 bg-brand-500/10 border border-brand-500/30 rounded-lg flex items-center justify-center text-brand-500 font-bold">
-                    <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                </div>
-                <div>
-                    <div class="flex items-center space-x-2">
-                        <span class="font-bold text-lg tracking-tight text-white">AETHER</span>
-                        <span class="text-xs bg-brand-500/20 text-brand-500 px-2 py-0.5 rounded border border-brand-500/30 font-medium">SIH26081</span>
+    <div class="app-shell">
+        <!-- Top Navigation -->
+        <header class="border-b border-dark-border bg-dark-surface/80 backdrop-blur sticky top-0 z-50">
+            <div class="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="h-9 w-9 bg-brand-500/10 border border-brand-500/30 rounded-lg flex items-center justify-center text-brand-500 font-bold">
+                        <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                     </div>
-                    <p class="text-xs text-gray-400">Dynamic Multi-Model NWP Ensemble</p>
-                </div>
-            </div>
-
-            <!-- Model Status Badges -->
-            <div class="hidden md:flex items-center space-x-4 text-xs">
-                <div class="flex items-center space-x-1.5 bg-dark-card border border-dark-border px-3 py-1.5 rounded-full">
-                    <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span class="text-gray-400">ECMWF IFS</span>
-                </div>
-                <div class="flex items-center space-x-1.5 bg-dark-card border border-dark-border px-3 py-1.5 rounded-full">
-                    <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span class="text-gray-400">NOAA GFS</span>
-                </div>
-                <div class="flex items-center space-x-1.5 bg-dark-card border border-dark-border px-3 py-1.5 rounded-full">
-                    <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span class="text-gray-400">DWD ICON</span>
-                </div>
-                <div class="flex items-center space-x-1.5 bg-brand-900/30 border border-brand-500/30 px-3 py-1.5 rounded-full text-brand-500">
-                    <span>PyTorch MLPGatingNet Active</span>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <!-- Main Container -->
-    <!-- Mobile AETHER Toggle -->
-    <button id="mobileAetherToggle" class="lg:hidden fixed bottom-6 right-6 z-50 h-14 w-14 bg-brand-500 text-white rounded-full shadow-[0_0_20px_rgba(20,184,166,0.4)] flex items-center justify-center focus:outline-none hover:scale-105 transition-transform">
-        <span class="text-2xl">🤖</span>
-    </button>
-
-    <!-- Main Container -->
-    <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 flex flex-col lg:flex-row gap-8 relative items-start">
-        <div class="flex-1 w-full space-y-8 min-w-0 mb-20 lg:mb-0">
-
-        <!-- Controls Panel -->
-        <section class="bg-dark-surface border border-dark-border rounded-xl p-6 shadow-xl">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <!-- Location Select -->
-                <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Location Preset</label>
-                    <select id="locationSelect" class="w-full bg-dark-card border border-dark-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500">
-                        <option value="17.4400,78.3400">Gachibowli (17.44°N, 78.34°E)</option>
-                        <option value="17.4474,78.3762">HITEC City (17.45°N, 78.38°E)</option>
-                        <option value="17.4399,78.4983">Secunderabad (17.44°N, 78.50°E)</option>
-                        <option value="17.3457,78.5522">LB Nagar (17.35°N, 78.55°E)</option>
-                        <option value="17.3688,78.5307">Dilsukhnagar (17.37°N, 78.53°E)</option>
-                        <option value="17.4156,78.4347">Banjara Hills (17.42°N, 78.43°E)</option>
-                        <option value="17.3719,78.5085">Malakpet (17.37°N, 78.51°E)</option>
-                        <option value="17.3371,78.5645">Vanasthalipuram (17.34°N, 78.56°E)</option>
-                        <option value="17.4843,78.3889">Kukatpally (17.48°N, 78.39°E)</option>
-                        <option value="17.4483,78.3905">Madhapur (17.45°N, 78.39°E)</option>
-                        <option value="17.4326,78.4071">Jubilee Hills (17.43°N, 78.41°E)</option>
-                        <option value="17.4375,78.4482">Ameerpet (17.44°N, 78.45°E)</option>
-                        <option value="17.4423,78.4619">Begumpet (17.44°N, 78.46°E)</option>
-                        <option value="17.3934,78.4338">Mehdipatnam (17.39°N, 78.43°E)</option>
-                        <option value="17.4294,78.5385">Tarnaka (17.43°N, 78.54°E)</option>
-                        <option value="17.4018,78.5602">Uppal (17.40°N, 78.56°E)</option>
-                        <option value="17.4699,78.3618">Kondapur (17.47°N, 78.36°E)</option>
-                        <option value="17.4988,78.3458">Miyapur (17.50°N, 78.35°E)</option>
-                        <option value="17.3986,78.3968">Manikonda (17.40°N, 78.40°E)</option>
-                        <option value="17.3888,78.4716">Nampally (17.39°N, 78.47°E)</option>
-                        <option value="17.3879,78.4754">Abids (17.39°N, 78.48°E)</option>
-                        <option value="17.3846,78.4848">Koti (17.38°N, 78.48°E)</option>
-                        <option value="17.3616,78.4747">Charminar (17.36°N, 78.47°E)</option>
-                    </select>
-                </div>
-
-                <!-- Forecast Target Date/Time -->
-                <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Valid Target Date/Time</label>
-                    <input type="datetime-local" id="validTimeInput" class="w-full bg-dark-card border border-dark-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500" />
-                </div>
-
-                <!-- Lead Time (Calculated) -->
-                <div>
-                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Estimated Lead Time</label>
-                    <div class="flex items-center space-x-2">
-                        <input type="number" id="leadTimeInput" readonly class="w-full bg-dark-card/50 border border-dark-border rounded-lg px-4 py-2.5 text-gray-300 code-font cursor-not-allowed" />
-                        <span class="text-sm text-gray-400">hrs</span>
-                    </div>
-                </div>
-
-                <!-- Fetch Button -->
-                <div class="flex items-end">
-                    <button id="fetchBtn" class="w-full bg-brand-500 hover:bg-brand-600 active:scale-[0.98] text-white font-medium py-2.5 px-4 rounded-lg flex items-center justify-center space-x-2 transition duration-150 shadow-lg shadow-brand-500/20">
-                        <svg id="fetchSpinner" class="hidden animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                        <span id="fetchBtnText">Run Dynamic Blending</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Error Banner -->
-            <div id="errorBanner" class="hidden mt-4 p-4 bg-red-900/20 border border-red-500/40 rounded-lg text-red-300 text-sm flex items-start space-x-3">
-                <svg class="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <div id="errorMessage" class="flex-1"></div>
-            </div>
-        </section>
-
-        <!-- Main Display Cards -->
-        <div id="resultsContainer" class="space-y-8">
-            <!-- Metric Highlights -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <!-- Main Blended Temp -->
-                <div class="bg-dark-surface border border-brand-500/30 rounded-xl p-6 relative overflow-hidden glow-brand flex flex-col justify-between">
-                    <div class="flex justify-between items-start mb-2">
-                        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mt-1">AETHER Dynamic Forecast</p>
-                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-brand-500/10 text-brand-500 border border-brand-500/30 whitespace-nowrap ml-2">
-                            Ensemble Blend
-                        </span>
-                    </div>
-                    <div class="flex items-baseline mb-2">
-                        <span id="blendTemp" class="text-5xl leading-none font-extrabold text-white tracking-tight">--</span>
-                        <span class="ml-1 text-2xl font-semibold text-gray-400">°C</span>
-                    </div>
-                    <p id="blendLocationTime" class="text-xs text-gray-400 flex items-center mb-4">
-                        <svg class="w-3.5 h-3.5 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                        <span class="truncate">Select a target and run</span>
-                    </p>
-                    <button id="explainBtn" class="hidden w-fit flex items-center space-x-1.5 text-xs text-brand-400 hover:text-brand-300 transition-colors font-medium px-3 py-1.5 rounded-lg bg-brand-500/10 border border-brand-500/20 hover:bg-brand-500/20">
-                        <span>🧠 Why this forecast?</span>
-                    </button>
-                </div>
-
-                <!-- Confidence -->
-                <div class="bg-dark-surface border border-dark-border rounded-xl p-6">
-                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Confidence Level</p>
-                    <div class="mt-4 flex items-center space-x-2">
-                        <span id="confidenceBadge" class="text-2xl font-bold text-gray-200">--</span>
-                    </div>
-                    <p class="mt-2 text-xs text-gray-400">Evaluated via model spread vs error history</p>
-                </div>
-
-                <!-- Uncertainty -->
-                <div class="bg-dark-surface border border-dark-border rounded-xl p-6">
-                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Uncertainty Metric</p>
-                    <div class="mt-4 flex items-baseline">
-                        <span id="uncertaintyVal" class="text-3xl font-bold text-white tracking-tight">--</span>
-                        <span class="ml-1 text-lg font-semibold text-gray-400">°C</span>
-                    </div>
-                    <p class="mt-2 text-xs text-gray-400">Expected error envelope (1-sigma)</p>
-                </div>
-
-                <!-- Model Disagreement -->
-                <div class="bg-dark-surface border border-dark-border rounded-xl p-6">
-                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">NWP Disagreement</p>
-                    <div class="mt-4 flex items-baseline">
-                        <span id="disagreementVal" class="text-3xl font-bold text-white tracking-tight">--</span>
-                        <span class="ml-1 text-lg font-semibold text-gray-400">°C std</span>
-                    </div>
-                    <p class="mt-2 text-xs text-gray-400">Inter-model standard deviation</p>
-                </div>
-            </div>
-
-            <!-- Deep Dive Panels -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <!-- Left: Model Comparison Chart -->
-                <div class="lg:col-span-2 bg-dark-surface border border-dark-border rounded-xl p-6">
-                    <div class="flex items-center justify-between mb-6">
-                        <div>
-                            <h3 class="text-base font-semibold text-white">NWP Model Comparison</h3>
-                            <p class="text-xs text-gray-400">Individual forecast baselines vs AETHER neural blend</p>
-                        </div>
-                    </div>
-                    <div class="relative h-64 w-full">
-                        <canvas id="comparisonChart"></canvas>
-                    </div>
-                </div>
-
-                <!-- Right: Dynamic Weight Allocation -->
-                <div class="bg-dark-surface border border-dark-border rounded-xl p-6 flex flex-col justify-between">
                     <div>
-                        <h3 class="text-base font-semibold text-white mb-1">Dynamic Neural Weights</h3>
-                        <p class="text-xs text-gray-400 mb-6">MLPGatingNet soft reliability distribution (Sum = 100%)</p>
-
-                        <div class="space-y-4">
-                            <!-- IFS Weight -->
-                            <div>
-                                <div class="flex justify-between text-xs font-medium mb-1">
-                                    <span class="text-blue-400">ECMWF IFS</span>
-                                    <span id="ifsWeightText" class="text-gray-300 code-font">--%</span>
-                                </div>
-                                <div class="h-2 bg-dark-card rounded-full overflow-hidden">
-                                    <div id="ifsWeightBar" class="h-full bg-blue-500 rounded-full transition-all duration-500" style="width: 0%"></div>
-                                </div>
-                            </div>
-
-                            <!-- GFS Weight -->
-                            <div>
-                                <div class="flex justify-between text-xs font-medium mb-1">
-                                    <span class="text-amber-400">NOAA GFS</span>
-                                    <span id="gfsWeightText" class="text-gray-300 code-font">--%</span>
-                                </div>
-                                <div class="h-2 bg-dark-card rounded-full overflow-hidden">
-                                    <div id="gfsWeightBar" class="h-full bg-amber-500 rounded-full transition-all duration-500" style="width: 0%"></div>
-                                </div>
-                            </div>
-
-                            <!-- ICON Weight -->
-                            <div>
-                                <div class="flex justify-between text-xs font-medium mb-1">
-                                    <span class="text-emerald-400">DWD ICON</span>
-                                    <span id="iconWeightText" class="text-gray-300 code-font">--%</span>
-                                </div>
-                                <div class="h-2 bg-dark-card rounded-full overflow-hidden">
-                                    <div id="iconWeightBar" class="h-full bg-emerald-500 rounded-full transition-all duration-500" style="width: 0%"></div>
-                                </div>
-                            </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="font-bold text-lg tracking-tight text-white">AETHER</span>
+                            <span class="text-xs bg-brand-500/20 text-brand-500 px-2 py-0.5 rounded border border-brand-500/30 font-medium">SIH26081</span>
                         </div>
+                        <p class="text-xs text-gray-400 hidden sm:block">Dynamic Multi-Model NWP Ensemble</p>
                     </div>
+                </div>
 
-                    <!-- Innovation Callout -->
-                    <div class="mt-6 p-4 bg-dark-card border border-dark-border rounded-lg text-xs text-gray-400">
-                        <div class="font-semibold text-gray-300 mb-1 flex items-center">
-                            <svg class="w-4 h-4 text-brand-500 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            Explainability
-                        </div>
-                        AETHER dynamically adjusts the contribution of each NWP model based on learned model reliability for the forecast context.
+                <!-- Model Status Badges -->
+                <div class="hidden lg:flex items-center space-x-3 text-xs flex-wrap">
+                    <div class="flex items-center space-x-1.5 bg-dark-card border border-dark-border px-3 py-1.5 rounded-full">
+                        <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span class="text-gray-400">ECMWF IFS</span>
+                    </div>
+                    <div class="flex items-center space-x-1.5 bg-dark-card border border-dark-border px-3 py-1.5 rounded-full">
+                        <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span class="text-gray-400">NOAA GFS</span>
+                    </div>
+                    <div class="flex items-center space-x-1.5 bg-dark-card border border-dark-border px-3 py-1.5 rounded-full">
+                        <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span class="text-gray-400">DWD ICON</span>
+                    </div>
+                    <div class="flex items-center space-x-1.5 bg-brand-900/30 border border-brand-500/30 px-3 py-1.5 rounded-full text-brand-500">
+                        <span>PyTorch MLPGatingNet Active</span>
                     </div>
                 </div>
             </div>
-        </div>
+        </header>
 
-        </div> <!-- End Left Dashboard -->
+        <!-- Mobile AETHER Toggle -->
+        <button id="mobileAetherToggle" class="lg:hidden fixed bottom-6 right-6 z-50 h-14 w-14 bg-brand-500 text-white rounded-full shadow-[0_0_20px_rgba(20,184,166,0.4)] flex items-center justify-center focus:outline-none hover:scale-105 transition-transform">
+            <span class="text-2xl">🤖</span>
+        </button>
 
-        <!-- Right: AETHER Sidebar -->
-        <aside id="aetherSidebar" class="
-            fixed inset-y-0 right-0 z-40 w-80 max-w-[85vw] transform translate-x-full transition-transform duration-300 ease-in-out
-            lg:relative lg:translate-x-0 lg:w-96 lg:sticky lg:top-24 lg:z-10 lg:h-[700px]
-            flex flex-col bg-dark-surface/95 backdrop-blur-xl border border-brand-500/30 lg:rounded-xl shadow-2xl lg:glow-brand overflow-hidden
-        ">
-            <!-- Close Button (Mobile Only) -->
-            <button id="mobileAetherClose" class="lg:hidden absolute top-4 right-4 text-gray-400 hover:text-white p-2 rounded-full bg-black/20">
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-            
-            <!-- Header -->
-            <div class="p-5 border-b border-white/5 bg-gradient-to-r from-brand-900/40 to-transparent flex items-center space-x-3">
-                 <div class="h-10 w-10 bg-brand-500/20 border border-brand-500/40 rounded-xl flex items-center justify-center text-brand-500 text-lg">
-                    🌦️
-                 </div>
-                 <div>
-                     <h2 class="text-base font-bold text-white tracking-tight">AETHER</h2>
-                     <p class="text-[11px] text-brand-300 uppercase tracking-widest mt-0.5">AI Weather Intelligence Assistant</p>
-                 </div>
-            </div>
+        <!-- Main Container -->
+        <div class="main-grid">
+            <div class="space-y-6 min-w-0">
 
-            <!-- Chat History -->
-            <div class="flex-1 p-5 overflow-y-auto space-y-4 bg-black/20 pb-4">
-                <!-- System Welcome Message -->
-                <div class="flex space-x-3">
-                    <div class="h-8 w-8 rounded-full bg-brand-500/20 border border-brand-500/40 flex items-center justify-center text-brand-500 flex-shrink-0 text-sm">
-                        🤖
+            <!-- Controls Panel -->
+            <section class="bg-dark-surface border border-dark-border rounded-xl p-5 shadow-xl">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Location Select -->
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Location Preset</label>
+                        <select id="locationSelect" class="w-full bg-dark-card border border-dark-border rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500">
+                            <option value="17.4400,78.3400">Gachibowli (17.44°N, 78.34°E)</option>
+                            <option value="17.4474,78.3762">HITEC City (17.45°N, 78.38°E)</option>
+                            <option value="17.4399,78.4983">Secunderabad (17.44°N, 78.50°E)</option>
+                            <option value="17.3457,78.5522">LB Nagar (17.35°N, 78.55°E)</option>
+                            <option value="17.3688,78.5307">Dilsukhnagar (17.37°N, 78.53°E)</option>
+                            <option value="17.4156,78.4347">Banjara Hills (17.42°N, 78.43°E)</option>
+                            <option value="17.3719,78.5085">Malakpet (17.37°N, 78.51°E)</option>
+                            <option value="17.3371,78.5645">Vanasthalipuram (17.34°N, 78.56°E)</option>
+                            <option value="17.4843,78.3889">Kukatpally (17.48°N, 78.39°E)</option>
+                            <option value="17.4483,78.3905">Madhapur (17.45°N, 78.39°E)</option>
+                            <option value="17.4326,78.4071">Jubilee Hills (17.43°N, 78.41°E)</option>
+                            <option value="17.4375,78.4482">Ameerpet (17.44°N, 78.45°E)</option>
+                            <option value="17.4423,78.4619">Begumpet (17.44°N, 78.46°E)</option>
+                            <option value="17.3934,78.4338">Mehdipatnam (17.39°N, 78.43°E)</option>
+                            <option value="17.4294,78.5385">Tarnaka (17.43°N, 78.54°E)</option>
+                            <option value="17.4018,78.5602">Uppal (17.40°N, 78.56°E)</option>
+                            <option value="17.4699,78.3618">Kondapur (17.47°N, 78.36°E)</option>
+                            <option value="17.4988,78.3458">Miyapur (17.50°N, 78.35°E)</option>
+                            <option value="17.3986,78.3968">Manikonda (17.40°N, 78.40°E)</option>
+                            <option value="17.3888,78.4716">Nampally (17.39°N, 78.47°E)</option>
+                            <option value="17.3879,78.4754">Abids (17.39°N, 78.48°E)</option>
+                            <option value="17.3846,78.4848">Koti (17.38°N, 78.48°E)</option>
+                            <option value="17.3616,78.4747">Charminar (17.36°N, 78.47°E)</option>
+                        </select>
                     </div>
-                    <div class="bg-dark-card border border-dark-border rounded-2xl p-4 text-sm text-gray-200 rounded-tl-sm shadow-lg leading-relaxed whitespace-pre-wrap">Hello! I’m AETHER, your AI weather intelligence assistant. 🌦️
-I’m currently under development — please support us as we build me into a smarter weather companion! 💙🤖</div>
-                </div>
-            </div>
 
-            <!-- Locked Input Area -->
-            <div class="p-5 border-t border-white/5 bg-dark-card/50">
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
-                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                    <!-- Forecast Target Date/Time -->
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Valid Target Date/Time</label>
+                        <input type="datetime-local" id="validTimeInput" class="w-full bg-dark-card border border-dark-border rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500" />
                     </div>
-                    <input type="text" disabled class="block w-full pl-10 pr-12 py-3 rounded-lg bg-black/40 border border-dark-border text-gray-500 text-sm focus:outline-none cursor-not-allowed" placeholder="Conversational intelligence coming soon...">
-                    <div class="absolute inset-y-0 right-0 pr-2 flex items-center">
-                        <button disabled class="p-1.5 rounded-md bg-dark-border/50 text-gray-500 cursor-not-allowed">
-                            <svg class="h-5 w-5 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+
+                    <!-- Lead Time (Calculated) -->
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Estimated Lead Time</label>
+                        <div class="flex items-center space-x-2">
+                            <input type="number" id="leadTimeInput" readonly class="w-full bg-dark-card/50 border border-dark-border rounded-lg px-3 py-2.5 text-sm text-gray-300 code-font cursor-not-allowed" />
+                            <span class="text-xs text-gray-400 whitespace-nowrap">hrs</span>
+                        </div>
+                    </div>
+
+                    <!-- Fetch Button -->
+                    <div class="flex items-end">
+                        <button id="fetchBtn" class="w-full bg-brand-500 hover:bg-brand-600 active:scale-[0.98] text-white text-sm font-medium py-2.5 px-4 rounded-lg flex items-center justify-center space-x-2 transition duration-150 shadow-lg shadow-brand-500/20">
+                            <svg id="fetchSpinner" class="hidden animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            <span id="fetchBtnText">Run Dynamic Blending</span>
                         </button>
                     </div>
                 </div>
-                <p class="text-[10px] text-center text-gray-500 mt-3 font-semibold uppercase tracking-widest flex items-center justify-center space-x-1">
-                    <span>🔒 Locked for development</span>
-                </p>
+
+                <!-- Error Banner -->
+                <div id="errorBanner" class="hidden mt-4 p-4 bg-red-900/20 border border-red-500/40 rounded-lg text-red-300 text-sm flex items-start space-x-3">
+                    <svg class="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <div id="errorMessage" class="flex-1"></div>
+                </div>
+            </section>
+
+            <!-- Main Display Cards -->
+            <div id="resultsContainer" class="space-y-6">
+                <!-- Metric Highlights -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+                    <!-- Main Blended Temp -->
+                    <div class="bg-dark-surface border border-brand-500/30 rounded-xl p-5 relative overflow-hidden glow-brand flex flex-col justify-between min-h-[180px]">
+                        <div class="flex justify-between items-start mb-3">
+                            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mt-1">AETHER Dynamic Forecast</p>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-brand-500/10 text-brand-500 border border-brand-500/30 whitespace-nowrap ml-2">
+                                Ensemble Blend
+                            </span>
+                        </div>
+                        <div class="flex items-baseline mb-3">
+                            <span id="blendTemp" class="text-5xl leading-none font-extrabold text-white tracking-tight">--</span>
+                            <span class="ml-1 text-2xl font-semibold text-gray-400">°C</span>
+                        </div>
+                        <p id="blendLocationTime" class="text-xs text-gray-400 flex items-center mb-4">
+                            <svg class="w-3.5 h-3.5 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            <span class="truncate">Select a target and run</span>
+                        </p>
+                        <button id="explainBtn" class="hidden w-fit flex items-center space-x-1.5 text-xs text-brand-400 hover:text-brand-300 transition-colors font-medium px-3 py-1.5 rounded-lg bg-brand-500/10 border border-brand-500/20 hover:bg-brand-500/20">
+                            <span>🧠 Why this forecast?</span>
+                        </button>
+                    </div>
+
+                    <!-- Confidence -->
+                    <div class="bg-dark-surface border border-dark-border rounded-xl p-5 min-h-[180px] flex flex-col justify-between">
+                        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Confidence Level</p>
+                        <div class="mt-4 flex items-center space-x-2">
+                            <span id="confidenceBadge" class="text-2xl font-bold text-gray-200">--</span>
+                        </div>
+                        <p class="mt-auto text-xs text-gray-400">Evaluated via model spread vs error history</p>
+                    </div>
+
+                    <!-- Uncertainty -->
+                    <div class="bg-dark-surface border border-dark-border rounded-xl p-5 min-h-[180px] flex flex-col justify-between">
+                        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Uncertainty Metric</p>
+                        <div class="mt-4 flex items-baseline">
+                            <span id="uncertaintyVal" class="text-3xl font-bold text-white tracking-tight">--</span>
+                            <span class="ml-1 text-lg font-semibold text-gray-400">°C</span>
+                        </div>
+                        <p class="mt-auto text-xs text-gray-400">Expected error envelope (1-sigma)</p>
+                    </div>
+
+                    <!-- Model Disagreement -->
+                    <div class="bg-dark-surface border border-dark-border rounded-xl p-5 min-h-[180px] flex flex-col justify-between">
+                        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">NWP Disagreement</p>
+                        <div class="mt-4 flex items-baseline">
+                            <span id="disagreementVal" class="text-3xl font-bold text-white tracking-tight">--</span>
+                            <span class="ml-1 text-lg font-semibold text-gray-400">°C std</span>
+                        </div>
+                        <p class="mt-auto text-xs text-gray-400">Inter-model standard deviation</p>
+                    </div>
+                </div>
+
+                <!-- Deep Dive Panels -->
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                    <!-- Left: Model Comparison Chart -->
+                    <div class="lg:col-span-3 bg-dark-surface border border-dark-border rounded-xl p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h3 class="text-base font-semibold text-white">NWP Model Comparison</h3>
+                                <p class="text-xs text-gray-400 mt-1">Individual forecast baselines vs AETHER neural blend</p>
+                            </div>
+                        </div>
+                        <div class="relative w-full" style="height: clamp(240px, 30vh, 360px);">
+                            <canvas id="comparisonChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Right: Dynamic Weight Allocation -->
+                    <div class="lg:col-span-2 bg-dark-surface border border-dark-border rounded-xl p-6 flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-base font-semibold text-white mb-1">Dynamic Neural Weights</h3>
+                            <p class="text-xs text-gray-400 mb-6">MLPGatingNet soft reliability distribution (Sum = 100%)</p>
+
+                            <div class="space-y-5">
+                                <!-- IFS Weight -->
+                                <div>
+                                    <div class="flex justify-between text-xs font-medium mb-2">
+                                        <span class="text-blue-400">ECMWF IFS</span>
+                                        <span id="ifsWeightText" class="text-gray-300 code-font">--%</span>
+                                    </div>
+                                    <div class="h-2.5 bg-dark-card rounded-full overflow-hidden">
+                                        <div id="ifsWeightBar" class="h-full bg-blue-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+                                    </div>
+                                </div>
+
+                                <!-- GFS Weight -->
+                                <div>
+                                    <div class="flex justify-between text-xs font-medium mb-2">
+                                        <span class="text-amber-400">NOAA GFS</span>
+                                        <span id="gfsWeightText" class="text-gray-300 code-font">--%</span>
+                                    </div>
+                                    <div class="h-2.5 bg-dark-card rounded-full overflow-hidden">
+                                        <div id="gfsWeightBar" class="h-full bg-amber-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+                                    </div>
+                                </div>
+
+                                <!-- ICON Weight -->
+                                <div>
+                                    <div class="flex justify-between text-xs font-medium mb-2">
+                                        <span class="text-emerald-400">DWD ICON</span>
+                                        <span id="iconWeightText" class="text-gray-300 code-font">--%</span>
+                                    </div>
+                                    <div class="h-2.5 bg-dark-card rounded-full overflow-hidden">
+                                        <div id="iconWeightBar" class="h-full bg-emerald-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Innovation Callout -->
+                        <div class="mt-6 p-4 bg-dark-card border border-dark-border rounded-lg text-xs text-gray-400">
+                            <div class="font-semibold text-gray-300 mb-1 flex items-center">
+                                <svg class="w-4 h-4 text-brand-500 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                Explainability
+                            </div>
+                            AETHER dynamically adjusts the contribution of each NWP model based on learned model reliability for the forecast context.
+                        </div>
+                    </div>
+                </div>
             </div>
-        </aside>
 
-        <!-- Overlay for mobile drawer -->
-        <div id="aetherOverlay" class="lg:hidden fixed inset-0 bg-black/60 z-30 hidden backdrop-blur-sm transition-opacity"></div>
+            </div> <!-- End Left Dashboard -->
 
-    </main>
+            <!-- Right: AETHER Sidebar -->
+            <aside id="aetherSidebar" class="
+                fixed inset-y-0 right-0 z-40 w-80 max-w-[85vw] transform translate-x-full transition-transform duration-300 ease-in-out
+                lg:relative lg:translate-x-0 lg:sticky lg:top-24 lg:z-10 lg:self-start
+                flex flex-col bg-dark-surface/95 backdrop-blur-xl border border-brand-500/30 lg:rounded-xl shadow-2xl lg:glow-brand overflow-hidden
+                h-screen lg:h-auto lg:max-h-[calc(100vh-8rem)]
+            ">
+                <!-- Close Button (Mobile Only) -->
+                <button id="mobileAetherClose" class="lg:hidden absolute top-4 right-4 text-gray-400 hover:text-white p-2 rounded-full bg-black/20">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+
+                <!-- Header -->
+                <div class="p-5 border-b border-white/5 bg-gradient-to-r from-brand-900/40 to-transparent flex items-center space-x-3 flex-shrink-0">
+                     <div class="h-10 w-10 bg-brand-500/20 border border-brand-500/40 rounded-xl flex items-center justify-center text-brand-500 text-lg">
+                        🌦️
+                     </div>
+                     <div>
+                         <h2 class="text-base font-bold text-white tracking-tight">AETHER</h2>
+                         <p class="text-[11px] text-brand-300 uppercase tracking-widest mt-0.5">AI Weather Intelligence Assistant</p>
+                     </div>
+                </div>
+
+                <!-- Chat History -->
+                <div class="flex-1 p-5 overflow-y-auto space-y-4 bg-black/20 pb-4">
+                    <!-- System Welcome Message -->
+                    <div class="flex space-x-3">
+                        <div class="h-8 w-8 rounded-full bg-brand-500/20 border border-brand-500/40 flex items-center justify-center text-brand-500 flex-shrink-0 text-sm">
+                            🤖
+                        </div>
+                        <div class="bg-dark-card border border-dark-border rounded-2xl p-4 text-sm text-gray-200 rounded-tl-sm shadow-lg leading-relaxed whitespace-pre-wrap">Hello! I'm AETHER, your AI weather intelligence assistant. 🌦️
+I'm currently under development — please support us as we build me into a smarter weather companion! 💙🤖</div>
+                    </div>
+                </div>
+
+                <!-- Locked Input Area -->
+                <div class="p-5 border-t border-white/5 bg-dark-card/50 flex-shrink-0">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                        </div>
+                        <input type="text" disabled class="block w-full pl-10 pr-12 py-3 rounded-lg bg-black/40 border border-dark-border text-gray-500 text-sm focus:outline-none cursor-not-allowed" placeholder="Conversational intelligence coming soon...">
+                        <div class="absolute inset-y-0 right-0 pr-2 flex items-center">
+                            <button disabled class="p-1.5 rounded-md bg-dark-border/50 text-gray-500 cursor-not-allowed">
+                                <svg class="h-5 w-5 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-center text-gray-500 mt-3 font-semibold uppercase tracking-widest flex items-center justify-center space-x-1">
+                        <span>🔒 Locked for development</span>
+                    </p>
+                </div>
+            </aside>
+
+            <!-- Overlay for mobile drawer -->
+            <div id="aetherOverlay" class="lg:hidden fixed inset-0 bg-black/60 z-30 hidden backdrop-blur-sm transition-opacity"></div>
+
+        </div>
+    </div>
     <!-- Transparency Modal -->
     <div id="transparencyOverlay" class="fixed inset-0 bg-black/80 z-50 hidden backdrop-blur-sm transition-opacity flex items-center justify-center p-4 overflow-y-auto">
-        <div id="transparencyModal" class="bg-dark-surface border border-brand-500/30 rounded-2xl shadow-2xl w-full max-w-3xl my-auto transform transition-transform scale-95 opacity-0 overflow-hidden flex flex-col max-h-[90vh]">
+        <div id="transparencyModal" class="bg-dark-surface border border-brand-500/30 rounded-2xl shadow-2xl w-full max-w-4xl my-auto transform transition-transform scale-95 opacity-0 overflow-hidden flex flex-col max-h-[90vh]">
             <!-- Header -->
-            <div class="px-6 py-5 border-b border-white/10 bg-dark-card flex justify-between items-center sticky top-0 z-10">
+            <div class="px-6 py-5 border-b border-white/10 bg-dark-card flex justify-between items-center sticky top-0 z-10 flex-shrink-0">
                 <div class="flex items-center space-x-3">
                     <span class="text-2xl">🧠</span>
                     <h2 class="text-xl font-bold text-white tracking-tight">AETHER Decision Transparency</h2>
@@ -358,10 +391,10 @@ I’m currently under development — please support us as we build me into a sm
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
-            
+
             <!-- Body -->
             <div class="p-6 overflow-y-auto w-full space-y-8 pb-10">
-                
+
                 <!-- Section 1 & 2: Context and Inputs -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="bg-dark-card border border-dark-border rounded-xl p-5">
@@ -385,7 +418,7 @@ I’m currently under development — please support us as we build me into a sm
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="bg-dark-card border border-dark-border rounded-xl p-5">
                         <h3 class="text-xs font-semibold text-brand-400 uppercase tracking-widest mb-4">2. NWP Model Inputs</h3>
                         <div class="space-y-3 text-sm text-gray-300">
@@ -404,7 +437,7 @@ I’m currently under development — please support us as we build me into a sm
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Section 3 & 4: Weights & Methodology -->
                 <div class="bg-dark-card border border-dark-border rounded-xl p-5">
                     <h3 class="text-xs font-semibold text-brand-400 uppercase tracking-widest mb-4">3. Dynamic Model Weights & Blending</h3>
@@ -447,18 +480,18 @@ I’m currently under development — please support us as we build me into a sm
                 <div class="bg-black/30 border border-brand-500/20 rounded-xl p-5 relative overflow-hidden">
                     <div class="absolute inset-0 bg-gradient-to-r from-brand-900/10 to-transparent pointer-events-none"></div>
                     <h3 class="text-xs font-semibold text-brand-400 uppercase tracking-widest mb-4">4. Transparent Blend Calculation</h3>
-                    
+
                     <div class="font-mono text-sm md:text-base text-gray-300 space-y-3 bg-black/40 p-5 rounded-lg border border-dark-border/50">
                         <div class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 items-center">
                              <div class="text-right text-gray-400"></div>
                              <div id="calcIfs" class="text-blue-300">(-- °C × --)</div>
-                             
+
                              <div class="text-right text-gray-400 font-bold">+</div>
                              <div id="calcGfs" class="text-amber-300">(-- °C × --)</div>
-                             
+
                              <div class="text-right text-gray-400 font-bold">+</div>
                              <div id="calcIcon" class="text-emerald-300">(-- °C × --)</div>
-                             
+
                              <div class="text-right text-gray-400 font-bold mt-2 pt-2 border-t border-dark-border/50">=</div>
                              <div id="calcResult" class="text-white font-bold text-lg md:text-xl mt-2 pt-2 border-t border-dark-border/50">-- °C</div>
                         </div>
@@ -483,7 +516,7 @@ I’m currently under development — please support us as we build me into a sm
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="bg-dark-card border border-dark-border rounded-xl p-5 flex flex-col justify-between">
                         <div>
                             <h3 class="text-xs font-semibold text-brand-400 uppercase tracking-widest mb-3">6. Provenance & Confidence</h3>
@@ -500,7 +533,7 @@ I’m currently under development — please support us as we build me into a sm
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Disclaimer -->
                 <div class="text-center mt-6">
                     <p class="text-[10px] text-gray-500 leading-relaxed max-w-2xl mx-auto italic">
@@ -545,7 +578,7 @@ I’m currently under development — please support us as we build me into a sm
             const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 12, 0, 0);
 
             document.getElementById('validTimeInput').value = formatDate(tomorrow);
-            
+
             // Limit date picker selection to supported forecast range (up to 144 hours / 6 days)
             const maxDate = new Date(now.getTime() + 144 * 60 * 60 * 1000);
             document.getElementById('validTimeInput').max = formatDate(maxDate);
@@ -564,11 +597,11 @@ I’m currently under development — please support us as we build me into a sm
             // Difference in hours
             const diffHours = Math.round((targetDate - now) / (1000 * 60 * 60));
             document.getElementById('leadTimeInput').value = Math.max(0, diffHours);
-            
+
             const fetchBtn = document.getElementById('fetchBtn');
             const errorBanner = document.getElementById('errorBanner');
             const errorMessage = document.getElementById('errorMessage');
-            
+
             if (diffHours < 0 || diffHours > 144) {
                 fetchBtn.disabled = true;
                 errorMessage.innerText = "Please select a forecast time within the available prediction window.";
@@ -661,7 +694,7 @@ I’m currently under development — please support us as we build me into a sm
                 const targetDate = new Date(rawValidTime);
                 const now = new Date();
                 const diffHoursTemp = Math.round((targetDate - now) / (1000 * 60 * 60));
-                
+
                 if (diffHoursTemp < 0 || diffHoursTemp > 144) {
                     throw new Error("Please select a forecast time within the available prediction window.");
                 }
@@ -697,7 +730,7 @@ I’m currently under development — please support us as we build me into a sm
             } finally {
                 fetchSpinner.classList.add('hidden');
                 fetchBtnText.innerText = "Run Dynamic Blending";
-                
+
                 // Re-evaluate button state based on current input validity
                 const currentValidTime = document.getElementById('validTimeInput').value;
                 if (currentValidTime) {
@@ -715,7 +748,7 @@ I’m currently under development — please support us as we build me into a sm
         function renderForecast(data) {
             lastApiData = data;
             document.getElementById('explainBtn').classList.remove('hidden');
-            
+
             document.getElementById('blendTemp').innerText = data.forecast.toFixed(2);
             document.getElementById('confidenceBadge').innerText = data.confidence || 'Nominal';
             document.getElementById('uncertaintyVal').innerText = `±${data.uncertainty.toFixed(2)}`;
@@ -755,16 +788,16 @@ I’m currently under development — please support us as we build me into a sm
             // Optionally auto-fetch initial forecast
             fetchForecast();
         };
-    
+
         // Transparency Logic
         let lastApiData = null;
-        
+
         function setupTransparency() {
             const explainBtn = document.getElementById('explainBtn');
             const overlay = document.getElementById('transparencyOverlay');
             const modal = document.getElementById('transparencyModal');
             const closeBtn = document.getElementById('closeTransparencyBtn');
-            
+
             function openModal() {
                 if(!lastApiData) return;
                 populateTransparency(lastApiData);
@@ -775,7 +808,7 @@ I’m currently under development — please support us as we build me into a sm
                     modal.classList.add('scale-100', 'opacity-100');
                 }, 10);
             }
-            
+
             function closeModal() {
                 modal.classList.remove('scale-100', 'opacity-100');
                 modal.classList.add('scale-95', 'opacity-0');
@@ -783,7 +816,7 @@ I’m currently under development — please support us as we build me into a sm
                     overlay.classList.add('hidden');
                 }, 300);
             }
-            
+
             explainBtn.addEventListener('click', openModal);
             closeBtn.addEventListener('click', closeModal);
             overlay.addEventListener('click', (e) => {
@@ -795,57 +828,57 @@ I’m currently under development — please support us as we build me into a sm
                 }
             });
         }
-        
+
         function populateTransparency(data) {
             const locName = document.getElementById('locationSelect').selectedOptions[0].text.split('(')[0].trim();
             const lat = data.location.latitude;
             const lon = data.location.longitude;
-            
+
             document.getElementById('transLocation').innerText = locName;
             document.getElementById('transCoords').innerText = `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
-            
+
             // Format time nicely
             const d = new Date(data.valid_time);
             document.getElementById('transValidTime').innerText = d.toLocaleString(undefined, {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'});
             document.getElementById('transLeadTime').innerText = data.lead_time_hours;
-            
+
             const f = data.model_forecasts || {};
             const w = data.model_weights || {};
-            
+
             document.getElementById('transIfsVal').innerText = (f.IFS !== undefined ? f.IFS.toFixed(2) : '--') + " °C";
             document.getElementById('transGfsVal').innerText = (f.GFS !== undefined ? f.GFS.toFixed(2) : '--') + " °C";
             document.getElementById('transIconVal').innerText = (f.ICON !== undefined ? f.ICON.toFixed(2) : '--') + " °C";
-            
+
             const wIfs = (w.IFS || 0);
             const wGfs = (w.GFS || 0);
             const wIcon = (w.ICON || 0);
-            
+
             // Weights Bars
             document.getElementById('transIfsWeight').innerText = (wIfs * 100).toFixed(1) + "%";
             document.getElementById('transIfsBar').style.width = (wIfs * 100) + "%";
-            
+
             document.getElementById('transGfsWeight').innerText = (wGfs * 100).toFixed(1) + "%";
             document.getElementById('transGfsBar').style.width = (wGfs * 100) + "%";
-            
+
             document.getElementById('transIconWeight').innerText = (wIcon * 100).toFixed(1) + "%";
             document.getElementById('transIconBar').style.width = (wIcon * 100) + "%";
-            
-            // Equation 
+
+            // Equation
             const ifsVal = f.IFS || 0;
             const gfsVal = f.GFS || 0;
             const iconVal = f.ICON || 0;
-            
+
             document.getElementById('calcIfs').innerText = `(${ifsVal.toFixed(2)} °C × ${wIfs.toFixed(3)})`;
             document.getElementById('calcGfs').innerText = `(${gfsVal.toFixed(2)} °C × ${wGfs.toFixed(3)})`;
             document.getElementById('calcIcon').innerText = `(${iconVal.toFixed(2)} °C × ${wIcon.toFixed(3)})`;
-            
+
             document.getElementById('calcResult').innerText = data.forecast.toFixed(2) + " °C";
-            
+
             // Uncertainty
             document.getElementById('transUncertainty').innerHTML = `±${data.uncertainty.toFixed(2)} <span class="text-xs ml-1 text-gray-400">°C</span>`;
             document.getElementById('transDisagreement').innerHTML = `${data.disagreement.toFixed(2)} <span class="text-xs ml-1 text-gray-400">std</span>`;
             document.getElementById('transConfidence').innerText = data.confidence || "Unknown";
-            
+
             // Provenance
             const refContainer = document.getElementById('refContainer');
             if(data.reference_value !== null && data.reference_value !== undefined) {
