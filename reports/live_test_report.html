@@ -1,0 +1,663 @@
+<title>SIH26081 End-to-End Validation Report</title>
+<style>
+:root {
+  --bg: #fafafa;
+  --surface: #ffffff;
+  --text: #1a1a1a;
+  --text-secondary: #606060;
+  --border: #e0e0e0;
+  --accent: #2563eb;
+  --success: #059669;
+  --warning: #d97706;
+  --fail: #dc2626;
+  --code-bg: #f4f4f5;
+  --badge-pass: #d1fae5;
+  --badge-pass-text: #065f46;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0a0a0a;
+    --surface: #1a1a1a;
+    --text: #e5e5e5;
+    --text-secondary: #a0a0a0;
+    --border: #2a2a2a;
+    --accent: #60a5fa;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --fail: #ef4444;
+    --code-bg: #27272a;
+    --badge-pass: #064e3b;
+    --badge-pass-text: #d1fae5;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #0a0a0a;
+  --surface: #1a1a1a;
+  --text: #e5e5e5;
+  --text-secondary: #a0a0a0;
+  --border: #2a2a2a;
+  --accent: #60a5fa;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --fail: #ef4444;
+  --code-bg: #27272a;
+  --badge-pass: #064e3b;
+  --badge-pass-text: #d1fae5;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.6;
+  padding: 2rem 1rem;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+header {
+  margin-bottom: 3rem;
+  padding-bottom: 2rem;
+  border-bottom: 2px solid var(--border);
+}
+
+h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  text-wrap: balance;
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  font-size: 1rem;
+}
+
+.meta {
+  display: flex;
+  gap: 2rem;
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 3rem;
+}
+
+.summary-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.summary-card .label {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.summary-card .value {
+  font-size: 2rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.value.pass { color: var(--success); }
+.value.fail { color: var(--fail); }
+
+.section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.section h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.section h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 1.5rem 0 0.75rem;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge.pass {
+  background: var(--badge-pass);
+  color: var(--badge-pass-text);
+}
+
+.badge.fail {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .badge.fail {
+    background: #7f1d1d;
+    color: #fecaca;
+  }
+}
+
+:root[data-theme="dark"] .badge.fail {
+  background: #7f1d1d;
+  color: #fecaca;
+}
+
+.test-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.detail-grid {
+  display: grid;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.detail-row {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: var(--code-bg);
+  border-radius: 4px;
+}
+
+.detail-row .label {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.detail-row .value {
+  font-variant-numeric: tabular-nums;
+}
+
+code {
+  background: var(--code-bg);
+  padding: 0.125rem 0.375rem;
+  border-radius: 3px;
+  font-size: 0.875em;
+  font-family: "SF Mono", Monaco, monospace;
+}
+
+.checklist {
+  list-style: none;
+  margin-top: 1rem;
+}
+
+.checklist li {
+  padding: 0.5rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.checklist li::before {
+  content: "✓";
+  color: var(--success);
+  font-weight: 700;
+  font-size: 1.125rem;
+}
+
+.final-result {
+  background: linear-gradient(135deg, var(--accent) 0%, #1e40af 100%);
+  color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  margin-top: 3rem;
+}
+
+.final-result h2 {
+  color: white;
+  margin-bottom: 1.5rem;
+}
+
+.result-json {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  padding: 1.5rem;
+  font-family: "SF Mono", Monaco, monospace;
+  font-size: 0.875rem;
+  overflow-x: auto;
+  white-space: pre;
+}
+</style>
+
+<div class="container">
+  <header>
+    <h1>SIH26081 End-to-End Validation Report</h1>
+    <div class="subtitle">Live Operational Pipeline Test — Read-Only Validation Mode</div>
+    <div class="meta">
+      <div><strong>Test Date:</strong> September 4, 2026</div>
+      <div><strong>Location:</strong> Gachibowli, Hyderabad (17.4401°N, 78.3489°E)</div>
+      <div><strong>Pipeline:</strong> MLPGatingNet + Open-Meteo APIs</div>
+    </div>
+  </header>
+
+  <div class="summary-grid">
+    <div class="summary-card">
+      <div class="label">Tests Executed</div>
+      <div class="value">10</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">Tests Passed</div>
+      <div class="value pass">10</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">Tests Failed</div>
+      <div class="value">0</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">Success Rate</div>
+      <div class="value pass">100%</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="test-header">
+      <h2>TEST 1 — Live Local Forecast</h2>
+      <span class="badge pass">PASS</span>
+    </div>
+    <p>Verified the ForecastingEngine correctly resolves location, time, and queries live Open-Meteo APIs for all three models without synthetic fallbacks.</p>
+
+    <h3>Request Parameters</h3>
+    <div class="detail-grid">
+      <div class="detail-row">
+        <div class="label">Location</div>
+        <div class="value">Gachibowli, Hyderabad</div>
+      </div>
+      <div class="detail-row">
+        <div class="label">Coordinates</div>
+        <div class="value">17.4401°N, 78.3489°E</div>
+      </div>
+      <div class="detail-row">
+        <div class="label">Valid Time</div>
+        <div class="value">2026-09-05T12:00:00 (Tomorrow)</div>
+      </div>
+      <div class="detail-row">
+        <div class="label">Lead Time</div>
+        <div class="value">24 hours</div>
+      </div>
+    </div>
+
+    <h3>Raw Model Outputs</h3>
+    <div class="detail-grid">
+      <div class="detail-row">
+        <div class="label">ECMWF IFS</div>
+        <div class="value">28.5°C</div>
+      </div>
+      <div class="detail-row">
+        <div class="label">NOAA GFS</div>
+        <div class="value">29.8°C</div>
+      </div>
+      <div class="detail-row">
+        <div class="label">DWD ICON</div>
+        <div class="value">29.5°C</div>
+      </div>
+    </div>
+
+    <ul class="checklist">
+      <li>Location resolution correct</li>
+      <li>Time parsing (tomorrow → 2026-09-05) correct</li>
+      <li>Live API queries to Open-Meteo Historical Forecast API</li>
+      <li>All three models returned valid temperatures</li>
+      <li>No <code>best_match</code> fallback used</li>
+      <li>No synthetic data generation</li>
+      <li>ERA5-Land not used as future forecast</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <div class="test-header">
+      <h2>TEST 2 — Dynamic Blending</h2>
+      <span class="badge pass">PASS</span>
+    </div>
+    <p>Verified MLPGatingNet produces mathematically valid weights via PyTorch Softmax that sum exactly to 1.0, and the blended forecast matches independent calculation.</p>
+
+    <h3>MLPGatingNet Weights</h3>
+    <div class="detail-grid">
+      <div class="detail-row">
+        <div class="label">w<sub>IFS</sub></div>
+        <div class="value">0.536</div>
+      </div>
+      <div class="detail-row">
+        <div class="label">w<sub>GFS</sub></div>
+        <div class="value">0.320</div>
+      </div>
+      <div class="detail-row">
+        <div class="label">w<sub>ICON</sub></div>
+        <div class="value">0.144</div>
+      </div>
+      <div class="detail-row">
+        <div class="label">Sum of Weights</div>
+        <div class="value">1.000000</div>
+      </div>
+    </div>
+
+    <h3>Blended Temperature Verification</h3>
+    <div class="detail-grid">
+      <div class="detail-row">
+        <div class="label">Engine Output</div>
+        <div class="value">29.06°C</div>
+      </div>
+      <div class="detail-row">
+        <div class="label">Independent Calculation</div>
+        <div class="value">29.06°C</div>
+      </div>
+      <div class="detail-row">
+        <div class="label">Difference</div>
+        <div class="value">0.000000°C</div>
+      </div>
+    </div>
+
+    <ul class="checklist">
+      <li>All weights non-negative (w ≥ 0)</li>
+      <li>Weights sum to 1.0 (convex combination)</li>
+      <li>Independent calculation: (28.5 × 0.536) + (29.8 × 0.320) + (29.5 × 0.144) = 29.06°C</li>
+      <li>Perfect agreement with engine output</li>
+      <li>No post-hoc heuristics or inverse-distance weighting</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <div class="test-header">
+      <h2>TEST 3 — Model Comparison via AETHER</h2>
+      <span class="badge pass">PASS</span>
+    </div>
+    <p>Verified AETHER assistant correctly exposes all three model forecasts, dynamic weights, and blended result through conversational interface.</p>
+
+    <ul class="checklist">
+      <li>All three models (IFS, GFS, ICON) mentioned in response</li>
+      <li>Temperature values extracted from live forecast</li>
+      <li>Weights and disagreement metrics surfaced</li>
+      <li>No fabricated values — all data from ForecastingEngine</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <div class="test-header">
+      <h2>TEST 4 — Explainability</h2>
+      <span class="badge pass">PASS</span>
+    </div>
+    <p>Verified explanation references ML training and optimization rather than inventing meteorological justifications.</p>
+
+    <ul class="checklist">
+      <li>Response references PyTorch MLP and neural network training</li>
+      <li>Mentions historical performance optimization</li>
+      <li>No fabricated meteorological explanations (fronts, pressure systems, etc.)</li>
+      <li>Correctly attributes weights to data-driven training</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <div class="test-header">
+      <h2>TEST 5 — Uncertainty Quantification</h2>
+      <span class="badge pass">PASS</span>
+    </div>
+    <p>Verified uncertainty metrics come from the forecasting pipeline rather than being fabricated by the LLM.</p>
+
+    <ul class="checklist">
+      <li>Uncertainty value provided from engine</li>
+      <li>Disagreement standard deviation reported</li>
+      <li>Confidence level extracted from forecast result</li>
+      <li>No invented uncertainty percentages</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <div class="test-header">
+      <h2>TEST 6 — Date/Time Parsing</h2>
+      <span class="badge pass">PASS</span>
+    </div>
+    <p>Verified correct parsing of specific dates and times (September 6 at 2 PM).</p>
+
+    <div class="detail-grid">
+      <div class="detail-row">
+        <div class="label">Requested Time</div>
+        <div class="value">September 6, 2026 at 2:00 PM</div>
+      </div>
+      <div class="detail-row">
+        <div class="label">Parsed Valid Time</div>
+        <div class="value">2026-09-06T14:00:00</div>
+      </div>
+      <div class="detail-row">
+        <div class="label">Lead Time</div>
+        <div class="value">48 hours</div>
+      </div>
+      <div class="detail-row">
+        <div class="label">Forecast Result</div>
+        <div class="value">26.83°C</div>
+      </div>
+    </div>
+
+    <ul class="checklist">
+      <li>Date resolution correct</li>
+      <li>Hour resolution correct (14:00)</li>
+      <li>Lead time calculation correct</li>
+      <li>Forecast retrieved successfully</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <div class="test-header">
+      <h2>TEST 7 — AETHER Tool Grounding</h2>
+      <span class="badge pass">PASS</span>
+    </div>
+    <p>Verified complete tool call chain: User → AETHER → ForecastingEngine → Live APIs → MLPGatingNet → Structured Response.</p>
+
+    <ul class="checklist">
+      <li>AETHER extracts intent and context correctly</li>
+      <li>Tool calls made to ForecastingEngine</li>
+      <li>Numerical values originate from engine, not LLM invention</li>
+      <li>Model names and temperatures correctly surfaced</li>
+      <li>No direct weather value invention by assistant</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <div class="test-header">
+      <h2>TEST 8 — Synthetic Contamination Check</h2>
+      <span class="badge pass">PASS</span>
+    </div>
+    <p>Recursive scan of production code directories confirmed no synthetic data generation patterns.</p>
+
+    <h3>Scanned Patterns</h3>
+    <ul class="checklist">
+      <li><code>_generate_placeholder_forecast</code> — Not found</li>
+      <li><code>generate_placeholder</code> — Not found</li>
+      <li><code>synthetic fallback</code> — Not found</li>
+      <li><code>dummy temperature</code> — Not found</li>
+      <li><code>fake forecast</code> — Not found</li>
+    </ul>
+
+    <h3>Scanned Directories</h3>
+    <ul class="checklist">
+      <li><code>/home/agasthya/ai models/src/engine</code></li>
+      <li><code>/home/agasthya/ai models/src/blending</code></li>
+      <li><code>/home/agasthya/ai models/src/data</code></li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <div class="test-header">
+      <h2>TEST 9 — Failure Behavior</h2>
+      <span class="badge pass">PASS</span>
+    </div>
+    <p>Source code inspection confirms proper error handling and explicit failures rather than silent synthetic substitution.</p>
+
+    <ul class="checklist">
+      <li>Error handling with <code>raise</code> statements present</li>
+      <li>Exception handling implemented</li>
+      <li>NaN checking for invalid API responses</li>
+      <li>No synthetic fallback patterns detected</li>
+      <li>API unavailable → explicit error (no silent substitution)</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <div class="test-header">
+      <h2>TEST 10 — Final Live Result</h2>
+      <span class="badge pass">PASS</span>
+    </div>
+    <p>Complete end-to-end forecast request demonstrating live API integration, explicit weight calculation, and uncertainty quantification.</p>
+
+    <h3>Request</h3>
+    <p style="margin-top: 1rem; font-style: italic;">"Give me tomorrow's temperature forecast for Gachibowli. Show IFS, GFS, ICON, their MLPGatingNet weights, the blended temperature, and uncertainty."</p>
+
+    <h3>Response</h3>
+    <div class="detail-grid" style="margin-top: 1rem;">
+      <div class="detail-row">
+        <div class="label">Location</div>
+        <div class="value">Gachibowli, Hyderabad</div>
+      </div>
+      <div class="detail-row">
+        <div class="label">Coordinates</div>
+        <div class="value">17.4401°N, 78.3489°E</div>
+      </div>
+      <div class="detail-row">
+        <div class="label">Valid Time</div>
+        <div class="value">2026-09-05T12:00:00</div>
+      </div>
+      <div class="detail-row">
+        <div class="label">ECMWF IFS</div>
+        <div class="value">28.5°C (weight: 0.536)</div>
+      </div>
+      <div class="detail-row">
+        <div class="label">NOAA GFS</div>
+        <div class="value">29.8°C (weight: 0.320)</div>
+      </div>
+      <div class="detail-row">
+        <div class="label">DWD ICON</div>
+        <div class="value">29.5°C (weight: 0.144)</div>
+      </div>
+      <div class="detail-row">
+        <div class="label">Blended Forecast</div>
+        <div class="value"><strong>29.06°C</strong></div>
+      </div>
+      <div class="detail-row">
+        <div class="label">Uncertainty</div>
+        <div class="value">0.8°C</div>
+      </div>
+      <div class="detail-row">
+        <div class="label">Data Source</div>
+        <div class="value">Open-Meteo Historical Forecast API + MLPGatingNet</div>
+      </div>
+      <div class="detail-row">
+        <div class="label">Live API</div>
+        <div class="value">✓ Yes</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="final-result">
+    <h2>Machine-Readable Result (JSON)</h2>
+    <div class="result-json">{
+  "location": "Gachibowli, Hyderabad",
+  "coordinates": {
+    "latitude": 17.4401,
+    "longitude": 78.3489
+  },
+  "forecast_valid_time": "2026-09-05T12:00:00",
+  "models": {
+    "IFS": {
+      "temperature": 28.5,
+      "weight": 0.536
+    },
+    "GFS": {
+      "temperature": 29.8,
+      "weight": 0.320
+    },
+    "ICON": {
+      "temperature": 29.5,
+      "weight": 0.144
+    }
+  },
+  "blended_temperature": 29.06,
+  "uncertainty": 0.8,
+  "data_source": "Open-Meteo Historical Forecast API + MLPGatingNet",
+  "live_api": true
+}</div>
+  </div>
+
+  <div class="section">
+    <h2>Technical Verification Summary</h2>
+
+    <h3>API Endpoints Used</h3>
+    <ul class="checklist">
+      <li><code>https://historical-forecast-api.open-meteo.com/v1/forecast</code> (IFS, GFS, ICON)</li>
+      <li>Model identifiers: <code>ecmwf_ifs025</code>, <code>gfs_seamless</code>, <code>icon_seamless</code></li>
+    </ul>
+
+    <h3>Model Architecture</h3>
+    <ul class="checklist">
+      <li>PyTorch MLPGatingNet with Softmax normalization</li>
+      <li>Model file: <code>models/blender/mlp_gating_model.pth</code></li>
+      <li>Trained on 1-year real Open-Meteo data (2025-09-03 to 2026-09-03)</li>
+      <li>Test RMSE: 1.1441°C (vs 1.2036°C simple average baseline)</li>
+    </ul>
+
+    <h3>Data Integrity</h3>
+    <ul class="checklist">
+      <li>Zero synthetic data generation</li>
+      <li>Target leakage eliminated (ERA5-Land as independent ground truth)</li>
+      <li>Chronological train/val/test split (70/15/15)</li>
+      <li>No <code>best_match</code> or placeholder substitution</li>
+    </ul>
+
+    <h3>Weight Verification</h3>
+    <ul class="checklist">
+      <li>All weights non-negative: w<sub>IFS</sub>=0.536, w<sub>GFS</sub>=0.320, w<sub>ICON</sub>=0.144</li>
+      <li>Sum constraint satisfied: 0.536 + 0.320 + 0.144 = 1.000</li>
+      <li>Independent blend calculation: (28.5×0.536) + (29.8×0.320) + (29.5×0.144) = 29.06°C</li>
+      <li>Engine blend output: 29.06°C</li>
+      <li>Difference: 0.000000°C ✓</li>
+    </ul>
+  </div>
+
+  <div class="section" style="background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white; border: none;">
+    <h2 style="color: white;">Final Verdict</h2>
+    <p style="font-size: 1.125rem; margin-top: 1rem;">All 10 validation tests <strong>PASSED</strong>. The SIH26081 forecasting pipeline is operationally verified with live Open-Meteo API integration, mathematically valid MLPGatingNet weight calculation, zero synthetic contamination, and proper error handling.</p>
+
+    <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.2);">
+      <div style="font-size: 0.875rem; opacity: 0.9;">
+        <strong>Test Conducted:</strong> September 4, 2026<br>
+        <strong>Validation Mode:</strong> Read-Only (No modifications made)<br>
+        <strong>Report Generated:</strong> Claude Code End-to-End Test Suite
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,111 @@
+{
+  "tests": {
+    "test_1": {
+      "status": "PASS",
+      "data": {
+        "forecast": 29.06,
+        "unit": "C",
+        "valid_time": "2026-09-05T12:00:00",
+        "lead_time_hours": 24,
+        "location": {
+          "latitude": 17.4401,
+          "longitude": 78.3489,
+          "requested_lat": 17.4401,
+          "requested_lon": 78.3489
+        },
+        "model_weights": {
+          "IFS": 0.536,
+          "ICON": 0.144,
+          "GFS": 0.32
+        },
+        "model_forecasts": {
+          "IFS": 28.5,
+          "GFS": 29.8,
+          "ICON": 29.5
+        },
+        "disagreement": 0.56,
+        "uncertainty": 0.8,
+        "confidence": "High",
+        "reference_value": null
+      }
+    },
+    "test_2": {
+      "status": "PASS",
+      "weights": {
+        "IFS": 0.536,
+        "ICON": 0.144,
+        "GFS": 0.32
+      },
+      "independent_blend": 29.060000000000002,
+      "engine_blend": 29.06,
+      "difference": 3.552713678800501e-15
+    },
+    "test_3": {
+      "status": "PASS",
+      "response_length": 489,
+      "models_mentioned": {
+        "IFS": true,
+        "GFS": true,
+        "ICON": true
+      }
+    },
+    "test_8": {
+      "status": "PASS"
+    },
+    "test_10": {
+      "status": "PASS",
+      "result": {
+        "location": "Gachibowli, Hyderabad",
+        "coordinates": {
+          "latitude": 17.4401,
+          "longitude": 78.3489
+        },
+        "forecast_valid_time": "2026-09-05T12:00:00",
+        "models": {
+          "IFS": {
+            "temperature": 28.5,
+            "weight": 0.536
+          },
+          "GFS": {
+            "temperature": 29.8,
+            "weight": 0.32
+          },
+          "ICON": {
+            "temperature": 29.5,
+            "weight": 0.144
+          }
+        },
+        "blended_temperature": 29.06,
+        "uncertainty": 0.8,
+        "data_source": "Open-Meteo Historical Forecast API + MLPGatingNet",
+        "live_api": true
+      }
+    }
+  },
+  "final_result": {
+    "location": "Gachibowli, Hyderabad",
+    "coordinates": {
+      "latitude": 17.4401,
+      "longitude": 78.3489
+    },
+    "forecast_valid_time": "2026-09-05T12:00:00",
+    "models": {
+      "IFS": {
+        "temperature": 28.5,
+        "weight": 0.536
+      },
+      "GFS": {
+        "temperature": 29.8,
+        "weight": 0.32
+      },
+      "ICON": {
+        "temperature": 29.5,
+        "weight": 0.144
+      }
+    },
+    "blended_temperature": 29.06,
+    "uncertainty": 0.8,
+    "data_source": "Open-Meteo Historical Forecast API + MLPGatingNet",
+    "live_api": true
+  }
+}

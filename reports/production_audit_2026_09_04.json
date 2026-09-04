@@ -1,0 +1,44 @@
+{
+  "audit_date": "2026-09-04T11:05:02.161808",
+  "model_sha256": "11180fb2b72d49154434ecad3276281b305277d0eeb2098df86d4485d5ad32b4",
+  "test_location": {
+    "lat": 17.44,
+    "lon": 78.34,
+    "name": "Gachibowli"
+  },
+  "test_valid_time": "2026-09-05T12:00:00",
+  "live_api_verified": true,
+  "endpoint_used": "https://api.open-meteo.com/v1/forecast",
+  "models_tested": [
+    "ICON",
+    "GFS",
+    "IFS"
+  ],
+  "weight_sum": 1.0,
+  "blend_arithmetic_verified": true,
+  "sample_forecast": {
+    "blended": 29.06,
+    "models": {
+      "IFS": 28.5,
+      "GFS": 29.8,
+      "ICON": 29.5
+    },
+    "weights": {
+      "IFS": 0.536,
+      "ICON": 0.144,
+      "GFS": 0.32
+    },
+    "disagreement": 0.56,
+    "uncertainty": 0.8
+  },
+  "files_modified": [
+    "src/engine/forecasting_engine.py"
+  ],
+  "files_not_modified": [
+    "models/blender/mlp_gating_model.pth",
+    "train_pipeline.py",
+    "scripts/build_training_data.py",
+    "reports/*"
+  ],
+  "status": "PRODUCTION_READY"
+}

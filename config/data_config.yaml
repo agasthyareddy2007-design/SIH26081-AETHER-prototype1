@@ -1,0 +1,81 @@
+# AETHER Data Configuration
+# Forecast sources, variables, and processing settings
+
+# V1 Scope
+scope:
+  region:
+    name: "Hyderabad"
+    lat_range: [16.8, 17.8]
+    lon_range: [78.0, 79.0]
+
+  primary_variable: "2m_temperature"
+
+  lead_times_hours: [6, 12, 24]
+
+  # Future expansion
+  additional_variables:
+    - "precipitation"
+    - "relative_humidity"
+    - "wind_speed"
+    - "surface_pressure"
+
+# Forecast Data Sources
+sources:
+  ifs:
+    name: "ECMWF IFS"
+    priority: 1
+    enabled: true
+
+  icon:
+    name: "ECMWF ICON"
+    priority: 2
+    enabled: true
+
+  gfs:
+    name: "NOAA GFS"
+    priority: 3
+    enabled: true
+
+# Verification/Reference
+reference:
+  era5:
+    name: "ERA5 Reanalysis"
+    enabled: true
+
+# Data Alignment
+alignment:
+  spatial:
+    method: "bilinear"  # interpolation method
+    target_resolution: 0.25  # degrees
+
+  temporal:
+    timezone: "UTC"
+
+  units:
+    temperature: "celsius"  # convert from Kelvin
+    precipitation: "mm"
+    wind: "m/s"
+    pressure: "hPa"
+
+# Data Download Settings
+download:
+  cache_dir: "data/raw"
+  max_retries: 3
+  retry_delay_seconds: 5
+  timeout_seconds: 300
+  validate_checksums: true
+  incremental: true
+
+# Data Quality
+quality:
+  missing_threshold: 0.1  # max fraction of missing values allowed
+  outlier_detection: true
+  duplicate_check: true
+
+# Train/Validation/Test Split
+splits:
+  method: "chronological"
+  train_fraction: 0.7
+  validation_fraction: 0.15
+  test_fraction: 0.15
+  # Exact dates will be determined based on available data

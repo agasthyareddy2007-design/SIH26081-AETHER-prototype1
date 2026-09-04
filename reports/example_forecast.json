@@ -1,0 +1,23 @@
+{
+  "forecast": 28.771446228027344,
+  "unit": "C",
+  "valid_time": "2026-09-02T12:00:00",
+  "lead_time_hours": 24,
+  "location": {
+    "latitude": 17.3,
+    "longitude": 78.5
+  },
+  "model_weights": {
+    "IFS": 0.8053852898650224,
+    "AIFS": 0.1139957638520271,
+    "GFS": 0.08061894628295038
+  },
+  "model_forecasts": {
+    "IFS": 29.081950795951183,
+    "AIFS": 25.971212664459024,
+    "GFS": 24.770495326636354
+  },
+  "disagreement": 1.816806175436935,
+  "uncertainty": 2.056806175436935,
+  "confidence": "Medium"
+}

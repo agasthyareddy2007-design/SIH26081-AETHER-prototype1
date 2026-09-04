@@ -1,0 +1,71 @@
+{
+  "feature_importance": {
+    "IFS": 1.7256265878677368,
+    "AIFS": 0.0,
+    "GFS": 0.07178803533315659,
+    "disagreement_std": 0.004435229580849409,
+    "disagreement_range": 0.00017677042342256755,
+    "diff_ifs_aifs": 0.1294485479593277,
+    "diff_ifs_gfs": 0.0016167135909199715,
+    "hour_sin": 0.19050659239292145,
+    "hour_cos": 0.0,
+    "doy_sin": 0.001856643590144813,
+    "doy_cos": 3.231059599784203e-05,
+    "lead_time": 0.0,
+    "lead_time_sqrt": 0.0
+  },
+  "ranked_features": [
+    {
+      "feature": "IFS",
+      "importance": 1.7256265878677368
+    },
+    {
+      "feature": "hour_sin",
+      "importance": 0.19050659239292145
+    },
+    {
+      "feature": "diff_ifs_aifs",
+      "importance": 0.1294485479593277
+    },
+    {
+      "feature": "GFS",
+      "importance": 0.07178803533315659
+    },
+    {
+      "feature": "disagreement_std",
+      "importance": 0.004435229580849409
+    },
+    {
+      "feature": "doy_sin",
+      "importance": 0.001856643590144813
+    },
+    {
+      "feature": "diff_ifs_gfs",
+      "importance": 0.0016167135909199715
+    },
+    {
+      "feature": "disagreement_range",
+      "importance": 0.00017677042342256755
+    },
+    {
+      "feature": "doy_cos",
+      "importance": 3.231059599784203e-05
+    },
+    {
+      "feature": "AIFS",
+      "importance": 0.0
+    },
+    {
+      "feature": "hour_cos",
+      "importance": 0.0
+    },
+    {
+      "feature": "lead_time",
+      "importance": 0.0
+    },
+    {
+      "feature": "lead_time_sqrt",
+      "importance": 0.0
+    }
+  ]
+}

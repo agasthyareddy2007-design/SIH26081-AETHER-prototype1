@@ -1,0 +1,120 @@
+# AETHER Model Configuration
+# Blending models and hyperparameters
+
+# XGBoost Dynamic Blender (Phase 6)
+xgboost:
+  # These are initial defaults; Optuna will optimize them
+  objective: "reg:squarederror"
+  device: "cuda"  # or "cpu"
+  tree_method: "hist"  # "gpu_hist" if GPU available
+
+  # Initial hyperparameters (pre-Optuna)
+  learning_rate: 0.1
+  max_depth: 6
+  min_child_weight: 1
+  subsample: 0.8
+  colsample_bytree: 0.8
+  reg_alpha: 0.0
+  reg_lambda: 1.0
+  n_estimators: 100
+
+  # Training settings
+  early_stopping_rounds: 10
+  eval_metric: "rmse"
+  verbose: true
+
+# Optuna Hyperparameter Optimization (Phase 7)
+optuna:
+  n_trials: 25  # ~20-30 trials for hackathon time constraints
+  timeout_seconds: null  # no timeout, use n_trials
+
+  sampler:
+    type: "TPESampler"
+    seed: 42
+    n_startup_trials: 10
+
+  pruner:
+    type: "HyperbandPruner"
+    min_resource: 10
+    max_resource: 100
+    reduction_factor: 3
+
+  search_space:
+    learning_rate:
+      type: "float"
+      low: 0.01
+      high: 0.3
+      log: true
+
+    max_depth:
+      type: "int"
+      low: 3
+      high: 10
+
+    min_child_weight:
+      type: "float"
+      low: 0.5
+      high: 10.0
+
+    subsample:
+      type: "float"
+      low: 0.5
+      high: 1.0
+
+    colsample_bytree:
+      type: "float"
+      low: 0.5
+      high: 1.0
+
+    reg_alpha:
+      type: "float"
+      low: 0.0
+      high: 10.0
+
+    reg_lambda:
+      type: "float"
+      low: 0.0
+      high: 10.0
+
+    n_estimators:
+      type: "int"
+      low: 50
+      high: 200
+
+  study:
+    storage: "sqlite:///experiments/optuna_study.db"
+    study_name: "aether_xgboost_v1"
+    direction: "minimize"  # minimize validation RMSE
+    load_if_exists: true  # allow resume
+
+# Static Blending (Phase 5)
+static_blend:
+  optimization_method: "scipy"  # minimize validation RMSE
+  initial_weights: [0.33, 0.33, 0.34]  # IFS, AIFS, GFS
+  constraints:
+    sum_to_one: true
+    non_negative: true
+
+# Baselines (Phase 4)
+baselines:
+  - "persistence"
+  - "ifs_alone"
+  - "aifs_alone"
+  - "gfs_alone"
+  - "simple_average"
+
+# Evaluation Metrics (Phase 8)
+metrics:
+  primary:
+    - "mae"
+    - "rmse"
+
+  secondary:
+    - "bias"
+    - "skill_score"
+    - "error_reduction"
+
+# Uncertainty Estimation (Phase 9)
+uncertainty:
+  method: "ensemble_spread"  # initial approach
+  calibration_required: false  # for V1

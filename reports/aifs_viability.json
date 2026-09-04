@@ -1,0 +1,58 @@
+{
+  "investigation": {
+    "timestamp": "2026-09-04T12:00:00Z",
+    "location": {
+      "latitude": 17.385,
+      "longitude": 78.4867,
+      "city": "Hyderabad"
+    },
+    "period": "August 2026",
+    "objective": "Determine legitimate source for real historical ECMWF AIFS forecast data for SIH26081 experiment."
+  },
+  "endpoints_tested": [
+    "Historical Forecast API (historical-forecast-api.open-meteo.com)",
+    "Single Runs API",
+    "Previous Runs API",
+    "Forecast API with past_days (api.open-meteo.com)",
+    "Historical Archive API (archive-api.open-meteo.com)",
+    "Ensemble API (ensemble-api.open-meteo.com)"
+  ],
+  "model_results": {
+    "ECMWF_AIFS_025": {
+      "historical_coverage": "Unavailable for August 2026",
+      "missing_rate": "100%",
+      "sample_values": [null, null, null],
+      "std": null,
+      "status": "FAILED",
+      "reason": "API returns 100% null values for ecmwf_aifs025 across all historical archive endpoints for August 2026. AIFS data is only populated for live current/future horizons."
+    },
+    "ECMWF_IFS_025": {
+      "historical_coverage": "Available",
+      "missing_rate": "0%",
+      "status": "PASSED"
+    },
+    "NOAA_GFS_SEAMLESS": {
+      "historical_coverage": "Available",
+      "missing_rate": "0%",
+      "status": "PASSED"
+    },
+    "ERA5_LAND": {
+      "role": "Reference Target",
+      "status": "PASSED",
+      "independence_check": "Values are numerically distinct from IFS, AIFS, and GFS."
+    }
+  },
+  "viability_verdict": {
+    "verdict": "B) AIFS HISTORICAL FORECAST NOT AVAILABLE",
+    "legitimate_alternatives": [
+      {
+        "model": "DWD ICON Global 11km (icon_global)",
+        "tradeoff": "A highly accurate operational physics-based NWP instead of an AI-NWP. Has full historical forecast archive natively on Open-Meteo."
+      },
+      {
+        "model": "CMA GRAPES Global (cma_grapes_global)",
+        "tradeoff": "Another physics-based NWP model with historical availability."
+      }
+    ]
+  }
+}

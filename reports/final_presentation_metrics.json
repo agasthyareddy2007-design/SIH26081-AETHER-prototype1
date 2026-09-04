@@ -1,0 +1,88 @@
+{
+  "dataset": {
+    "train_rows": 1575,
+    "val_rows": 337,
+    "test_rows": 338,
+    "total_rows": 2250,
+    "train_date_range": [
+      "2026-08-01 06:00:00",
+      "2026-08-22 00:00:00"
+    ],
+    "val_date_range": [
+      "2026-08-22 06:00:00",
+      "2026-08-27 00:00:00"
+    ],
+    "test_date_range": [
+      "2026-08-26 06:00:00",
+      "2026-08-31 00:00:00"
+    ],
+    "unique_training_dates": 21,
+    "training_span_days": 21,
+    "spatial_grid": "5\u00d75",
+    "lead_times_hours": [
+      6,
+      12,
+      24
+    ]
+  },
+  "models": {
+    "candidates": [
+      "ECMWF IFS",
+      "NOAA GFS",
+      "DWD ICON"
+    ],
+    "reference": "ERA5-Land",
+    "aifs_removed": true
+  },
+  "test_metrics": {
+    "ifs": {
+      "rmse": 1.2529491836482172,
+      "mae": 0.9603550295857988
+    },
+    "gfs": {
+      "rmse": 1.7573177517095113,
+      "mae": 1.4023668639053255
+    },
+    "icon": {
+      "rmse": 1.4243133921483904,
+      "mae": 1.13698224852071
+    },
+    "simple_average": {
+      "rmse": 1.4033619349898896,
+      "mae": 1.1032544378698224
+    },
+    "dynamic_blend": {
+      "rmse": 1.304150093122329,
+      "mae": 0.987652243664984
+    }
+  },
+  "improvement": {
+    "percentage": 7.069583362204794,
+    "baseline_rmse": 1.4033619349898896,
+    "dynamic_rmse": 1.304150093122329,
+    "absolute_reduction": 0.09921184186756049
+  },
+  "weight_verification": {
+    "all_weights_non_negative": true,
+    "all_sums_equal_one": true,
+    "weighted_equation_verified": true,
+    "weight_distribution": {
+      "ifs": {
+        "mean": 0.4538983106613159,
+        "min": 0.10992076992988586,
+        "max": 0.9915805459022522
+      },
+      "icon": {
+        "mean": 0.21589787304401398,
+        "min": 0.004194033797830343,
+        "max": 0.3419932723045349
+      },
+      "gfs": {
+        "mean": 0.3302037715911865,
+        "min": 0.0025127988774329424,
+        "max": 0.7135180830955505
+      }
+    }
+  },
+  "audit_timestamp": "2026-09-04T07:24:57Z"
+}

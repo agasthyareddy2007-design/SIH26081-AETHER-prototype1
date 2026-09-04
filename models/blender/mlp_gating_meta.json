@@ -1,0 +1,1 @@
+{"feature_cols": ["IFS", "ICON", "GFS", "hour_sin", "hour_cos", "doy_sin", "doy_cos", "lead_time", "lead_time_sqrt", "latitude", "longitude"], "candidates": ["IFS", "ICON", "GFS"]}

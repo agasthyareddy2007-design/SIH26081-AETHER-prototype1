@@ -1,0 +1,2 @@
+{"instruction": "What factors influenced the forecast?", "intent": "explain_forecast", "tool": "get_forecast_explanation", "response_template": "The key factors are: {factors}. The most important features are time of day (diurnal cycle) and lead time, followed by the base model forecasts and their disagreement."}
+{"instruction": "Book me a flight", "intent": "out_of_scope_task", "response": "I'm a weather forecasting assistant. I can help you understand weather conditions, but I can't book flights or perform other tasks."}

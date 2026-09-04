@@ -1,0 +1,61 @@
+# 1. Environment & Sensitive Data (CATEGORY H)
+.env
+.env.*
+secrets.json
+
+# 2. Datasets & Raw Features (CATEGORY G)
+/data/
+om_cache/
+
+# 3. Ignored Model Artifacts (CATEGORY G)
+models/blender/archive/
+models/blender/xgboost_*.pkl
+models/blender/mlp_gating.pth
+models/blender/*_stats.npy
+models/blender/static_weights.yaml
+
+# 4. Logs & Local stdout caches (CATEGORY G)
+logs/
+*.log
+execute_summary*.txt
+environment_report.txt
+all_files.txt
+
+# 5. Scratchpad JSONs and Diagnostics (CATEGORY F, G)
+/ifs.json
+/gfs.json
+/era5.json
+/aifs.json
+/fix_*.py
+/diagnose_*.py
+/discover_*.py
+/download_test.py
+/patch_train.py
+/update_app.py
+/forensic_audit.py
+/verify_cuda.py
+/verify_environment.py
+/run_ablation*.py
+/run_final_test.py
+/run_inverse_error.py
+/run_metrics_compare.py
+/run_phases*.py
+/run_walkforward.py
+/execute_all.py
+/test_aifs_source.py
+/test_classifier_blender.py
+/test_engine.py
+/test_phase*.py
+/test_reg_latlon.py
+
+# 6. Python Environment
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.venv/
+venv/
+env/
+experiments/
+*.bak
+*.pre_db

@@ -1,0 +1,134 @@
+{
+  "total_tests": 15,
+  "passed": 13,
+  "failed": 2,
+  "test_results": [
+    {
+      "test_id": 0,
+      "instruction": "Which model is most accurate?",
+      "expected_intent": "model_comparison",
+      "passed": true,
+      "notes": [
+        "Expected tool: get_model_comparison"
+      ]
+    },
+    {
+      "test_id": 1,
+      "instruction": "Why is the forecast uncertain?",
+      "expected_intent": "explain_uncertainty",
+      "passed": true,
+      "notes": [
+        "Expected tool: get_forecast_explanation"
+      ]
+    },
+    {
+      "test_id": 2,
+      "instruction": "Can I trust this forecast?",
+      "expected_intent": "explain_confidence",
+      "passed": true,
+      "notes": [
+        "Expected tool: get_uncertainty"
+      ]
+    },
+    {
+      "test_id": 3,
+      "instruction": "How confident are you in this forecast?",
+      "expected_intent": "explain_confidence",
+      "passed": true,
+      "notes": [
+        "Expected tool: get_uncertainty"
+      ]
+    },
+    {
+      "test_id": 4,
+      "instruction": "What's the weather like in New York?",
+      "expected_intent": "out_of_scope_location",
+      "passed": true,
+      "notes": []
+    },
+    {
+      "test_id": 5,
+      "instruction": "Why did you choose these model weights?",
+      "expected_intent": "explain_weights",
+      "passed": true,
+      "notes": [
+        "Expected tool: get_forecast_explanation"
+      ]
+    },
+    {
+      "test_id": 6,
+      "instruction": "What will tomorrow's temperature be?",
+      "expected_intent": "forecast_temperature",
+      "passed": true,
+      "notes": [
+        "Expected tool: predict_forecast"
+      ]
+    },
+    {
+      "test_id": 7,
+      "instruction": "Temperature forecast for the next 12 hours",
+      "expected_intent": "forecast_temperature",
+      "passed": true,
+      "notes": [
+        "Expected tool: predict_forecast"
+      ]
+    },
+    {
+      "test_id": 8,
+      "instruction": "Hey",
+      "expected_intent": "greeting",
+      "passed": false,
+      "notes": [
+        "Greeting validation failed"
+      ]
+    },
+    {
+      "test_id": 9,
+      "instruction": "Will there be a cyclone next month?",
+      "expected_intent": "out_of_scope_timeframe",
+      "passed": true,
+      "notes": []
+    },
+    {
+      "test_id": 10,
+      "instruction": "How do IFS and AIFS compare?",
+      "expected_intent": "model_comparison",
+      "passed": true,
+      "notes": [
+        "Expected tool: get_model_comparison"
+      ]
+    },
+    {
+      "test_id": 11,
+      "instruction": "Why does the system use multiple models?",
+      "expected_intent": "explain_blending",
+      "passed": true,
+      "notes": []
+    },
+    {
+      "test_id": 12,
+      "instruction": "Hello",
+      "expected_intent": "greeting",
+      "passed": true,
+      "notes": []
+    },
+    {
+      "test_id": 13,
+      "instruction": "Hi AETHER",
+      "expected_intent": "greeting",
+      "passed": false,
+      "notes": [
+        "Greeting validation failed"
+      ]
+    },
+    {
+      "test_id": 14,
+      "instruction": "Will it rain today?",
+      "expected_intent": "forecast_precipitation",
+      "passed": true,
+      "notes": [
+        "Expected tool: predict_forecast"
+      ]
+    }
+  ]
+}

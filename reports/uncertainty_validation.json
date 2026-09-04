@@ -1,0 +1,18 @@
+{
+  "Low Uncertainty": {
+    "mean_uncertainty_score": 0.8392291649949699,
+    "actual_mae": 0.050064192499433356,
+    "count": 112
+  },
+  "Medium Uncertainty": {
+    "mean_uncertainty_score": 1.4377637564278247,
+    "actual_mae": 0.007554722691441256,
+    "count": 111
+  },
+  "High Uncertainty": {
+    "mean_uncertainty_score": 2.3453912062031654,
+    "actual_mae": 0.01684549746306027,
+    "count": 115
+  },
+  "correlation": -0.2511274467433367
+}

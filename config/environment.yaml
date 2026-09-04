@@ -1,0 +1,35 @@
+# AETHER Environment Configuration
+# Hardware and system settings
+
+gpu:
+  device: "cuda"
+  name: "NVIDIA GeForce RTX 5080"
+  compute_capability: "12.0"
+  vram_gb: 16
+
+cpu:
+  model: "AMD Ryzen 7 9800X3D"
+  cores: 16
+
+memory:
+  ram_gb: 30
+
+cuda:
+  version: "13.3"
+  toolkit_path: "/opt/cuda"
+
+pytorch:
+  version: "2.14.0"
+  cuda_version: "13.0"
+
+xgboost:
+  version: "3.4.1"
+  gpu_enabled: true
+
+paths:
+  project_root: "/home/agasthya/ai models"
+  data_root: "data"
+  models_root: "models"
+  logs_root: "logs"
+
+random_seed: 42
