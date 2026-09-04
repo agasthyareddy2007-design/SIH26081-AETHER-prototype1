@@ -1,3 +1,4 @@
+import os
 import logging
 from pathlib import Path
 from datetime import datetime, timedelta
@@ -58,7 +59,12 @@ class ForecastingEngine:
             ("ICON", "icon_seamless", base_url)
         ]
 
+        om_api_key = os.environ.get("OPENMETEO_API_KEY")
+
         for name, slug, endpoint in models:
+            if om_api_key:
+                endpoint = endpoint.replace("https://", "https://customer-")
+
             params = {
                 "latitude": round(lat, 4),
                 "longitude": round(lon, 4),
@@ -67,6 +73,9 @@ class ForecastingEngine:
                 "hourly": "temperature_2m",
                 "models": slug
             }
+            if om_api_key:
+                params["apikey"] = om_api_key
+
             try:
                 res = self.om_client.fetch(endpoint, params)
                 if isinstance(res, list):
