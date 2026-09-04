@@ -440,26 +440,26 @@
                 fixed inset-y-0 right-0 z-40 w-80 max-w-[85vw] transform translate-x-full transition-transform duration-300 ease-in-out
                 lg:relative lg:translate-x-0 lg:sticky lg:top-24 lg:z-10 lg:self-start
                 flex flex-col bg-dark-surface/95 backdrop-blur-xl border border-brand-500/30 lg:rounded-xl shadow-2xl lg:glow-brand overflow-hidden
-                h-screen lg:h-auto lg:max-h-[calc(100vh-8rem)]
+                h-screen lg:h-auto lg:max-h-[calc(100vh-7rem)]
             ">
                 <!-- Close Button (Mobile Only) -->
                 <button id="mobileAetherClose" class="lg:hidden absolute top-4 right-4 text-gray-400 hover:text-white p-2 rounded-full bg-black/20">
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
 
-                <!-- Header -->
-                <div class="p-5 border-b border-white/5 bg-gradient-to-r from-brand-900/40 to-transparent flex items-center space-x-3 flex-shrink-0">
-                     <div class="h-10 w-10 bg-brand-500/20 border border-brand-500/40 rounded-xl flex items-center justify-center text-brand-500 text-lg">
+                <!-- Header (Compact) -->
+                <div class="p-4 border-b border-white/5 bg-gradient-to-r from-brand-900/40 to-transparent flex items-center space-x-3 flex-shrink-0">
+                     <div class="h-9 w-9 bg-brand-500/20 border border-brand-500/40 rounded-xl flex items-center justify-center text-brand-500 text-base">
                         🌦️
                      </div>
                      <div>
-                         <h2 class="text-base font-bold text-white tracking-tight">AETHER</h2>
-                         <p class="text-[11px] text-brand-300 uppercase tracking-widest mt-0.5">AI Weather Intelligence Assistant</p>
+                         <h2 class="text-sm font-bold text-white tracking-tight">AETHER</h2>
+                         <p class="text-[10px] text-brand-300 uppercase tracking-widest mt-0.5">AI Weather Intelligence</p>
                      </div>
                 </div>
 
-                <!-- Chat History -->
-                <div class="flex-1 p-5 overflow-y-auto space-y-4 bg-black/20 pb-4">
+                <!-- Chat History (Expanded on Desktop) -->
+                <div class="flex-1 p-5 overflow-y-auto space-y-4 bg-black/20 pb-4 min-h-[300px] lg:min-h-[400px]">
                     <!-- System Welcome Message -->
                     <div class="flex space-x-3">
                         <div class="h-8 w-8 rounded-full bg-brand-500/20 border border-brand-500/40 flex items-center justify-center text-brand-500 flex-shrink-0 text-sm">
@@ -471,7 +471,7 @@ I'm currently under development — please support us as we build me into a smar
                 </div>
 
                 <!-- Locked Input Area -->
-                <div class="p-5 border-t border-white/5 bg-dark-card/50 flex-shrink-0">
+                <div class="p-4 border-t border-white/5 bg-dark-card/50 flex-shrink-0">
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
                             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
@@ -483,9 +483,35 @@ I'm currently under development — please support us as we build me into a smar
                             </button>
                         </div>
                     </div>
-                    <p class="text-[10px] text-center text-gray-500 mt-3 font-semibold uppercase tracking-widest flex items-center justify-center space-x-1">
+                    <p class="text-[10px] text-center text-gray-500 mt-2.5 font-semibold uppercase tracking-widest flex items-center justify-center space-x-1">
                         <span>🔒 Locked for development</span>
                     </p>
+                </div>
+
+                <!-- Model & Accuracy Disclosure -->
+                <div class="p-4 border-t border-white/5 bg-gradient-to-b from-dark-card/30 to-dark-card/50 flex-shrink-0">
+                    <div class="flex items-start space-x-2.5 mb-3">
+                        <div class="h-6 w-6 rounded-md bg-brand-500/10 border border-brand-500/30 flex items-center justify-center text-brand-400 flex-shrink-0 text-xs">
+                            🧠
+                        </div>
+                        <h3 class="text-[11px] font-bold text-gray-300 uppercase tracking-wider">Model & Accuracy Disclosure</h3>
+                    </div>
+
+                    <div class="space-y-2.5 text-[11px] leading-relaxed text-gray-400">
+                        <p>AETHER is a custom weather intelligence prototype developed for SIH26081. Its neural blending model was trained from scratch using <strong class="text-gray-300">1 year</strong> of historical NWP/weather data and high-end GPU compute within a limited development timeframe.</p>
+
+                        <p>The current prototype is focused on Hyderabad and demonstrates dynamic blending of ECMWF IFS, NOAA GFS and DWD ICON forecasts using a PyTorch MLPGatingNet.</p>
+
+                        <div class="flex flex-wrap gap-1.5 my-2">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-semibold bg-brand-500/10 text-brand-400 border border-brand-500/20">Custom Model</span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20">Trained from Scratch</span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Hyderabad Prototype</span>
+                        </div>
+
+                        <p class="text-[10px]">Accuracy can be improved further through additional historical data, longer training, expanded geographic coverage, additional predictive features and continued model optimization. The architecture can be scaled beyond Hyderabad to support broader regions with the goal of reducing forecast error and improving generalization.</p>
+
+                        <p class="text-[10px] text-gray-500 italic border-t border-white/5 pt-2.5 mt-2.5">AETHER is a research/prototype system. Forecasts are estimates and should not be considered guaranteed or authoritative weather information.</p>
+                    </div>
                 </div>
             </aside>
 
